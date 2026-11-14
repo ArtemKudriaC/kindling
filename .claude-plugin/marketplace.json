@@ -1,0 +1,13 @@
+{
+  "name": "kindling",
+  "description": "Living backdrops for the Claude Code desktop app: the looks mod, eighteen themes",
+  "owner": {
+    "name": "ArtemKudriaC"
+  },
+  "plugins": [
+    {
+      "name": "looks",
+      "source": "./"
+    }
+  ]
+}
