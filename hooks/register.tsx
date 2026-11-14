@@ -1,5 +1,5 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register, ThemeBackdropGlass, ThemeSetArgs } from 'claude-code'
+import type { EngineInterface, Register, ThemeBackdropGlass, ThemeResult, ThemeSetArgs } from 'claude-code'
 
 import type { Activity, LookState } from '../types'
 import { makeColors } from './make-colors.js'
@@ -184,7 +184,13 @@ const colorsOf = (id: string) => {
   return { theme, unpainted }
 }
 
-async function apply($: EngineInterface, id: string): Promise<string | undefined> {
+// What the person should read: the colour kit's refusal, or the engine's reason when the theme does not stand.
+// A theme that stands with no client to draw it yet (a terminal chat, the app before its window attaches) is not a fault:
+// the engine keeps it under a request id and draws it when a client attaches.
+export const faultOf = (unpainted: string | undefined, set: ThemeResult): string | undefined =>
+  unpainted ?? (set.isDrawn || set.requestId !== undefined ? undefined : set.reason)
+
+async function apply($: EngineInterface, id: string): Promise<{ fault: string | undefined; isDrawn: boolean }> {
   const look = lookOf(id)
   const { theme, unpainted } = colorsOf(id)
   const only: 'light' | 'dark' | undefined = PALETTES[id]?.only
@@ -194,7 +200,7 @@ async function apply($: EngineInterface, id: string): Promise<string | undefined
     ...(only === undefined ? {} : { overrideColorScheme: only }),
   }
   const set = await $.theme.set(args)
-  return unpainted ?? (set.isDrawn ? undefined : set.reason)
+  return { fault: faultOf(unpainted, set), isDrawn: set.isDrawn }
 }
 
 const list = () =>
@@ -236,7 +242,7 @@ export const register: Register = on => {
     await $.command.register({ name: COMMAND, description: 'Сменить тему: /look, /look <имя>, /look set recovery|garden <число>' })
     const s: LookState = stored(await $.store.get('state')) ?? { look: DEFAULT }
     await update($, state, () => s)
-    const fault = await apply($, s.look)
+    const { fault } = await apply($, s.look)
     if (fault !== undefined) {
       $.ui.status(fault)
     }
@@ -274,8 +280,24 @@ export const register: Register = on => {
     const s = { ...now, look: id }
     await $.store.set('state', s)
     await update($, state, () => s)
-    const fault = await apply($, id)
-    return { text: `${LOOKS[id].title}: ${LOOKS[id].blurb}.${fault === undefined ? '' : ` Не нарисовалась: ${fault}`}` }
+    const { fault, isDrawn } = await apply($, id)
+    const note =
+      fault !== undefined ? ` Не нарисовалась: ${fault}` : isDrawn ? '' : ' Выбор сохранён. Здесь тему не видно: её рисует приложение на компьютере.'
+    return { text: `${LOOKS[id].title}: ${LOOKS[id].blurb}.${note}` }
+  })
+
+  // A copy where nothing was chosen wears the default. The first time the app shows it, say once which look that is and how to change it.
+  on('session.attach', { surface: 'desktop' }, async ($, e, next) => {
+    const joined = await next(e)
+    try {
+      if (stored(await $.store.get('state')) === undefined && (await $.store.get('greeted')) !== true) {
+        await $.store.set('greeted', true)
+        $.ui.toast(`Тема «${LOOKS[DEFAULT].title}». Другие: /${COMMAND}`)
+      }
+    } catch {
+      // A store that cannot be read now must not stop the window from attaching.
+    }
+    return joined
   })
 
   on('turn.start', async ($, e, next) => {

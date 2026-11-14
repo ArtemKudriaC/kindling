@@ -1,12 +1,15 @@
 import { expect, test } from 'claude-code/testing'
 
+import { PALETTES } from '../hooks/palettes'
+import { faultOf } from '../hooks/register'
+
 type Set = { backdrop?: { scene?: string } }
 
-const engine = (on: any, sets: Set[], store: Record<string, unknown> = {}) => {
+const engine = (on: any, sets: Set[], store: Record<string, unknown> = {}, drawn: unknown = { isDrawn: true, requestId: 'theme' }) => {
   on('command.register', (_: unknown, e: any) => ({ value: { command: e.name } }))
   on('theme.set', (_: unknown, e: any) => {
     sets.push(e)
-    return { value: { isDrawn: true, requestId: 'theme' } }
+    return { value: drawn }
   })
   on('store.get', (_: unknown, e: any) => ({ value: store[e.key] ?? null }))
   on('store.set', (_: unknown, e: any) => {
@@ -188,4 +191,97 @@ test('an idle open chat follows too: the timer asked at start runs the same chec
 
   expect(asked).toEqual([4000, 4000])
   expect(sets.at(-1)?.backdrop?.scene).toBe('terracotta')
+})
+
+// What the engine answers where nothing draws a theme yet: a terminal chat, or the app before its window attaches.
+const WAITS = { isDrawn: false, requestId: 'backdrop', reason: 'no attached desktop or mobile client draws themes yet; the theme stands and draws when one attaches' }
+
+const notices = (on: any) => {
+  const seen = { status: [] as unknown[], toasts: [] as string[] }
+  on('ui.status', (_: unknown, e: any) => {
+    seen.status.push(e.text)
+    return { value: undefined }
+  })
+  on('ui.toast', (_: unknown, e: any) => {
+    seen.toasts.push(e.text)
+    return { value: undefined }
+  })
+  on('session.attach', (_: unknown, e: any) => ({ clientId: e.clientId }))
+  return seen
+}
+
+test('a chat nothing draws in yet gets no warning: the look is set and stored, and /look says where it shows', async ($, on) => {
+  const sets: Set[] = []
+  const store: Record<string, unknown> = { state: { look: 'garden' } }
+  engine(on, sets, store, WAITS)
+  const seen = notices(on)
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  expect(sets.at(-1)?.backdrop?.scene).toBe('garden')
+  expect(seen.status.length).toBe(0)
+
+  const said = await $.command.run({ command: 'look', args: 'stipple-lake' })
+  expect(sets.at(-1)?.backdrop?.scene).toBe('stipple-lake')
+  expect((store.state as { look: string }).look).toBe('stipple-lake')
+  expect(said.text).toMatch(/Озеро/)
+  expect(said.text).toMatch(/рисует приложение на компьютере/)
+  expect(/no attached|Не нарисовалась/.test(said.text)).toBe(false)
+  expect(seen.status.length).toBe(0)
+})
+
+test('a theme the engine refuses is still reported, on the status line at start and in the /look answer', async ($, on) => {
+  const sets: Set[] = []
+  engine(on, sets, { state: { look: 'garden' } }, { isDrawn: false, reason: 'themes are turned off here' })
+  const seen = notices(on)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  expect(seen.status.at(-1)).toBe('themes are turned off here')
+
+  const said = await $.command.run({ command: 'look', args: 'clay' })
+  expect(said.text).toMatch(/Не нарисовалась: themes are turned off here/)
+})
+
+// A test cannot hand the mod a palette the colour kit refuses (the mod loads its own copy of the palettes), so the rule is checked where it lives.
+test("a palette the desktop app will not paint is reported whatever the engine answers", async () => {
+  const refused = "Desktop won't paint this theme, because this text is under 3:1: text-primary on surface-0 is 1.00:1 in light mode"
+  expect(faultOf(refused, WAITS)).toBe(refused)
+  expect(faultOf(refused, { isDrawn: true, requestId: 'theme' })).toBe(refused)
+  expect(faultOf(undefined, WAITS)).toBe(undefined)
+  expect(faultOf(undefined, { isDrawn: true, requestId: 'theme' })).toBe(undefined)
+  expect(faultOf(undefined, { isDrawn: false, reason: 'themes are turned off here' })).toBe('themes are turned off here')
+})
+
+test('Озеро keeps its indigo accent, and no other role moved', async () => {
+  const lake = PALETTES['stipple-lake']
+  expect(JSON.stringify(lake.roles)).toBe('{"accent":"#2747c9","danger":"#b3303f","success":"#2f7a56","warning":"#8f5a0c","pro":"#6a4fc0"}')
+  expect(JSON.stringify(lake.dark.roles)).toBe('{"accent":"#8ea4ff","danger":"#e8707c","success":"#6fc08a","warning":"#e0a43c","pro":"#b39cf0"}')
+})
+
+test('a copy with no choice yet says once, when the app shows it, which look it wears and how to change it', async ($, on) => {
+  const sets: Set[] = []
+  const store: Record<string, unknown> = {}
+  engine(on, sets, store, WAITS)
+  const seen = notices(on)
+  await $.session.start({ cwd: '/', surface: null, isInteractive: false })
+  expect(sets.at(-1)?.backdrop?.scene).toBe('koster')
+  expect(seen.toasts.length).toBe(0)
+
+  await $.session.attach({ surface: 'desktop', clientId: 'desktop:default' })
+  expect(seen.toasts.length).toBe(1)
+  expect(seen.toasts[0]).toMatch(/Костёр/)
+  expect(seen.toasts[0]).toMatch(/\/look/)
+  expect(store.state).toBe(undefined)
+
+  await $.session.attach({ surface: 'desktop', clientId: 'desktop:second' })
+  expect(seen.toasts.length).toBe(1)
+})
+
+test('a copy that has a choice says nothing when the app shows it', async ($, on) => {
+  const sets: Set[] = []
+  const store: Record<string, unknown> = { state: { look: 'stipple-lake' } }
+  engine(on, sets, store, WAITS)
+  const seen = notices(on)
+  await $.session.start({ cwd: '/', surface: null, isInteractive: false })
+  expect(sets.at(-1)?.backdrop?.scene).toBe('stipple-lake')
+  await $.session.attach({ surface: 'desktop', clientId: 'desktop:default' })
+  expect(seen.toasts.length).toBe(0)
+  expect(seen.status.length).toBe(0)
 })

@@ -43,6 +43,8 @@ Theme names and command replies are in Russian. Each theme sets the colours, the
 
 The choice is stored per copy of the mod: a copy run from a development folder keeps its own choice, apart from the installed plugin's.
 
+In a terminal chat `/look` saves the choice and draws nothing: the themes show in the desktop app. A copy where nothing was chosen yet wears Костёр and says so once, in a toast, the first time the app shows it.
+
 A theme belongs to a chat, so the app's New session screen stays plain until the chat starts.
 
 ## Glyph: wallpapers painted in character tiles
