@@ -20,6 +20,7 @@ import { rasterScene } from './scenes/raster'
 import { rasterCodeScene } from './scenes/raster-code'
 import { rasterIdeScene } from './scenes/raster-ide'
 import { recoveryScene } from './scenes/recovery'
+import { stippleLakeScene } from './scenes/stipple-lake'
 import { terracottaScene } from './scenes/terracotta'
 import { trainingScene } from './scenes/training'
 
@@ -158,6 +159,13 @@ const LOOKS = {
     glass: { blur: 14, opacity: 0.55 },
     live: true,
     scene: a => glyphTrainScene(a === 'idle' ? 'idle' : 'busy'),
+  },
+  'stipple-lake': {
+    title: 'Озеро',
+    blurb: 'лесистый склон над озером, написанный точками: утром синий лес и рыбак в оранжевой лодке, ночью луна и фонарь на носу; пока Claude работает, лодка идёт через озеро и тянет след, клик по воде пускает круги и рыбу',
+    glass: { blur: 14, opacity: 0.55 },
+    live: true,
+    scene: a => stippleLakeScene(a === 'idle' ? 'idle' : 'busy'),
   },
 } satisfies Record<string, Look>
 

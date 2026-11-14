@@ -1,6 +1,6 @@
 # kindling
 
-Living backdrops for the Claude Code desktop app. One mod, `looks`, with eighteen themes that move while Claude works and rest while it waits.
+Living backdrops for the Claude Code desktop app. One mod, `looks`, with nineteen themes that move while Claude works and rest while it waits.
 
 ![Маяк at night](previews/glyph-lighthouse-dark.jpg)
 
@@ -47,6 +47,15 @@ Every object is rasterized into small tiles, one monospace character each, shade
 | **Одуванчики** `glyph-dandelion`: a meadow seen from low down | at dusk the heads are seed clocks and the wind carries seeds |
 | <img src="previews/glyph-train-light.jpg" width="420"> | <img src="previews/glyph-train-dark.jpg" width="420"> |
 | **Поезд** `glyph-train`: a small railway in hill country | signal green, the steam train runs through the tunnel |
+
+## Stipple: a painting in dabs
+
+A wooded slope over a still lake, built from short strokes of paint: three hues on every crown, vertical dabs in the sky, horizontal ones on the water. It follows the app's scheme: a warm morning in blue and green, or a moonlit night all in blue. Click the water for rings and a jumping fish, click the boat to rock it.
+
+| Morning | Night |
+|---|---|
+| <img src="previews/stipple-lake-light.jpg" width="420"> | <img src="previews/stipple-lake-dark.jpg" width="420"> |
+| **Озеро** `stipple-lake`: a fisherman waits in an orange boat | while Claude works, the boat is paddled across the lake and pulls a wake |
 
 ## Raster: print dither
 

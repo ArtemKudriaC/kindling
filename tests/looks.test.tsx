@@ -88,7 +88,7 @@ test('every look draws an svg on desktop and nothing in the terminal', async ($,
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
-  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train']) {
+  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake']) {
     const ui = await $.ui.mount(backdrop(id))
     const svg = (await ui.find({ type: 'Svg' }))?.props.source
     expect(String(svg).startsWith('<svg')).toBe(true)
@@ -98,4 +98,29 @@ test('every look draws an svg on desktop and nothing in the terminal', async ($,
   const term = await $.ui.mount({ ...backdrop('koster'), surface: 'terminal' })
   expect(await term.find({ type: 'Svg' })).toBe(undefined)
   await term.unmount()
+})
+
+test('/look stipple-lake wears Озеро: listed, two states, each under 120000 characters, no script', async ($, on) => {
+  const sets: Set[] = []
+  engine(on, sets)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+
+  expect((await $.command.run({ command: 'look', args: 'stipple-lake' })).text).toMatch(/Озеро/)
+  expect(sets.at(-1)?.backdrop?.scene).toBe('stipple-lake')
+  expect((await $.command.run({ command: 'look', args: 'nope' })).text).toMatch(/stipple-lake/)
+
+  const idle = await $.ui.mount(backdrop('stipple-lake'))
+  const resting = String((await idle.find({ type: 'Svg' }))?.props.source)
+  await idle.unmount()
+  await $.turn.start({ turnId: 't1' })
+  const busy = await $.ui.mount(backdrop('stipple-lake'))
+  const working = String((await busy.find({ type: 'Svg' }))?.props.source)
+  await busy.unmount()
+
+  expect(working).not.toBe(resting)
+  for (const svg of [resting, working]) {
+    expect(svg.startsWith('<svg')).toBe(true)
+    expect(svg.length < 120000).toBe(true)
+    expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
+  }
 })
