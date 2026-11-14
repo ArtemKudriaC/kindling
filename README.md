@@ -22,16 +22,28 @@ claude plugin install looks --marketplace ArtemKudriaC/kindling
 
 In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `ArtemKudriaC/kindling`, then Add plugin.
 
+To get new themes later, update and restart:
+
+```
+claude plugin update looks@kindling
+```
+
+A chat keeps the version it started with: other chats show a new theme only after the plugin is updated and they are restarted.
+
 ## Use
 
 | Command | What it does |
 |---|---|
 | `/look` | lists the themes and shows the current one |
-| `/look <id>` | switches the theme and remembers it |
+| `/look <id>` | switches the theme and remembers it; other open chats running the same copy follow within a few seconds |
 | `/look set recovery 0..100` | the recovery score that `recovery` draws |
 | `/look set garden 0..7` | habits kept this week, for `garden` |
 
 Theme names and command replies are in Russian. Each theme sets the colours, the glass of the panels and a backdrop. The backdrops are drawn in SVG only: no images, no scripts.
+
+The choice is stored per copy of the mod: a copy run from a development folder keeps its own choice, apart from the installed plugin's.
+
+A theme belongs to a chat, so the app's New session screen stays plain until the chat starts.
 
 ## Glyph: wallpapers painted in character tiles
 

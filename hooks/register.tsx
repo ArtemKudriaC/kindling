@@ -27,6 +27,8 @@ import { trainingScene } from './scenes/training'
 const PLUGIN = 'looks'
 const COMMAND = 'look'
 const DEFAULT = 'koster' as const
+// How often an open chat checks whether another chat chose a different look.
+const FOLLOW_MS = 4000
 
 type Look = {
   title: string
@@ -207,24 +209,45 @@ async function setActivity($: EngineInterface, a: Activity): Promise<void> {
   }
 }
 
+const stored = (saved: unknown): LookState | undefined =>
+  saved !== null && typeof saved === 'object' && isLook((saved as LookState).look) ? (saved as LookState) : undefined
+
+// The look is the person's, not one chat's: a chat that is already open takes what another chat stored.
+// The store is read last and `/look` writes it first, so a check that lands in the middle of a `/look` never puts the old look back.
+// It never throws: a store that cannot be read now is read again at the next check, and the turn goes on.
+async function follow($: EngineInterface): Promise<void> {
+  try {
+    const now = await read($, state)
+    const s = stored(await $.store.get('state'))
+    if (s === undefined || (s.look === now.look && s.recovery === now.recovery && s.garden === now.garden)) {
+      return
+    }
+    await update($, state, () => s)
+    if (s.look !== now.look) {
+      await apply($, s.look)
+    }
+  } catch {
+    return
+  }
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: COMMAND, description: 'Сменить тему: /look, /look <имя>, /look set recovery|garden <число>' })
-    const saved = await $.store.get('state')
-    const s: LookState =
-      saved !== null && typeof saved === 'object' && isLook((saved as LookState).look)
-        ? (saved as LookState)
-        : { look: DEFAULT }
+    const s: LookState = stored(await $.store.get('state')) ?? { look: DEFAULT }
     await update($, state, () => s)
     const fault = await apply($, s.look)
     if (fault !== undefined) {
       $.ui.status(fault)
     }
+    void $.clock.every(FOLLOW_MS, () => follow($))
     return next(e)
   })
 
   on('command.run', { command: COMMAND }, async ($, e) => {
     const words = e.args.trim().split(/\s+/).filter(Boolean)
+    // Catch up first: a chat that has not followed yet would write its old look back over the newer choice.
+    await follow($)
     const now = await read($, state)
 
     if (words.length === 0 || words[0] === 'list') {
@@ -239,8 +262,8 @@ export const register: Register = on => {
         return { text: 'Так: /look set recovery 0..100 или /look set garden 0..7' }
       }
       const s = { ...now, [field]: Math.round(value) }
-      await update($, state, () => s)
       await $.store.set('state', s)
+      await update($, state, () => s)
       return { text: `${field} = ${Math.round(value)}.` }
     }
 
@@ -249,14 +272,15 @@ export const register: Register = on => {
       return { text: `Нет темы «${words[0]}». Есть: ${Object.keys(LOOKS).join(', ')}.` }
     }
     const s = { ...now, look: id }
-    await update($, state, () => s)
     await $.store.set('state', s)
+    await update($, state, () => s)
     const fault = await apply($, id)
     return { text: `${LOOKS[id].title}: ${LOOKS[id].blurb}.${fault === undefined ? '' : ` Не нарисовалась: ${fault}`}` }
   })
 
   on('turn.start', async ($, e, next) => {
     if (e.agentId === undefined) {
+      await follow($)
       await setActivity($, 'busy')
     }
     return next(e)

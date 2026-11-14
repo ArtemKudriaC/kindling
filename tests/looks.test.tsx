@@ -124,3 +124,68 @@ test('/look stipple-lake wears Озеро: listed, two states, each under 120000
     expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
   }
 })
+
+test('an open chat follows the look another chat stored, and ignores one it does not have', async ($, on) => {
+  const sets: Set[] = []
+  const store: Record<string, unknown> = {}
+  engine(on, sets, store)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  expect(sets.at(-1)?.backdrop?.scene).toBe('koster')
+
+  store.state = { look: 'garden', garden: 5 }
+  await $.turn.start({ turnId: 't1' })
+  expect(sets.at(-1)?.backdrop?.scene).toBe('garden')
+
+  const count = sets.length
+  await $.turn.complete({ turnId: 't1', answer: '', reason: 'done' })
+  await $.turn.start({ turnId: 't2' })
+  expect(sets.length).toBe(count)
+
+  const drawn = async () => {
+    const ui = await $.ui.mount(backdrop('garden'))
+    const svg = (await ui.find({ type: 'Svg' }))?.props.source
+    await ui.unmount()
+    return svg
+  }
+  const five = await drawn()
+  store.state = { look: 'garden', garden: 2 }
+  await $.turn.start({ turnId: 't2b' })
+  expect(await drawn()).not.toBe(five)
+  expect(sets.length).toBe(count)
+
+  store.state = { look: 'a-look-this-copy-lacks' }
+  await $.turn.start({ turnId: 't3' })
+  expect(sets.at(-1)?.backdrop?.scene).toBe('garden')
+  expect(sets.length).toBe(count)
+  expect((await $.command.run({ command: 'look', args: '' })).text).toMatch(/Сейчас: Сад привычек/)
+})
+
+test('a chat that has not followed yet does not write its old look back', async ($, on) => {
+  const store: Record<string, unknown> = {}
+  engine(on, [], store)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+
+  store.state = { look: 'garden', garden: 3 }
+  await $.command.run({ command: 'look', args: 'set recovery 50' })
+  expect(store.state).toEqual({ look: 'garden', garden: 3, recovery: 50 })
+})
+
+test('an idle open chat follows too: the timer asked at start runs the same check', async ($, on) => {
+  const sets: Set[] = []
+  const store: Record<string, unknown> = {}
+  engine(on, sets, store)
+  const asked: number[] = []
+  on('clock.every', (_: unknown, e: any) => {
+    asked.push(e.ms)
+    if (asked.length > 1) {
+      return { deny: 'one period is enough' }
+    }
+    store.state = { look: 'terracotta' }
+    return { value: undefined }
+  })
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  await new Promise(done => setTimeout(done, 50))
+
+  expect(asked).toEqual([4000, 4000])
+  expect(sets.at(-1)?.backdrop?.scene).toBe('terracotta')
+})
