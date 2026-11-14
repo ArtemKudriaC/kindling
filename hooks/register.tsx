@@ -11,6 +11,7 @@ import { glyphBalloonsScene } from './scenes/glyph-balloons'
 import { glyphDandelionScene } from './scenes/glyph-dandelion'
 import { glyphLighthouseScene } from './scenes/glyph-lighthouse'
 import { glyphTrainScene } from './scenes/glyph-train'
+import { gouacheAutumnScene } from './scenes/gouache-autumn'
 import { hackerScene } from './scenes/hacker'
 import { homeScene } from './scenes/home'
 import { kosterScene } from './scenes/koster'
@@ -168,6 +169,13 @@ const LOOKS = {
     glass: { blur: 14, opacity: 0.55 },
     live: true,
     scene: a => stippleLakeScene(a === 'idle' ? 'idle' : 'busy'),
+  },
+  'gouache-autumn': {
+    title: 'Осень',
+    blurb: 'ноябрьский холм гуашью: клён роняет листья у фонаря и скамейки с котом, вдали деревня и маяк над заливом; днём туман и бледное солнце, ночью звёзды и месяц; пока Claude работает, ветер несёт листья через всю картину, клик по кроне сыплет листву, фонарь мигает, кот подпрыгивает',
+    glass: { blur: 14, opacity: 0.55 },
+    live: true,
+    scene: a => gouacheAutumnScene(a === 'idle' ? 'idle' : 'busy'),
   },
 } satisfies Record<string, Look>
 

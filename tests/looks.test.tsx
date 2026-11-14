@@ -91,7 +91,7 @@ test('every look draws an svg on desktop and nothing in the terminal', async ($,
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
-  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake']) {
+  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn']) {
     const ui = await $.ui.mount(backdrop(id))
     const svg = (await ui.find({ type: 'Svg' }))?.props.source
     expect(String(svg).startsWith('<svg')).toBe(true)
@@ -125,6 +125,38 @@ test('/look stipple-lake wears Озеро: listed, two states, each under 120000
     expect(svg.startsWith('<svg')).toBe(true)
     expect(svg.length < 120000).toBe(true)
     expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
+  }
+})
+
+test('/look gouache-autumn wears Осень: listed, light and dark, leaves fall at rest and more of them at work, clicks answer, no script', async ($, on) => {
+  const sets: Set[] = []
+  engine(on, sets)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+
+  expect((await $.command.run({ command: 'look', args: 'gouache-autumn' })).text).toMatch(/Осень/)
+  expect(sets.at(-1)?.backdrop?.scene).toBe('gouache-autumn')
+  expect((await $.command.run({ command: 'look', args: 'nope' })).text).toMatch(/gouache-autumn/)
+
+  const idle = await $.ui.mount(backdrop('gouache-autumn'))
+  const resting = String((await idle.find({ type: 'Svg' }))?.props.source)
+  await idle.unmount()
+  await $.turn.start({ turnId: 't1' })
+  const busy = await $.ui.mount(backdrop('gouache-autumn'))
+  const working = String((await busy.find({ type: 'Svg' }))?.props.source)
+  await busy.unmount()
+
+  // a leaf in the air is a group of class "f" that the fall keyframes carry
+  const falling = (svg: string) => (svg.match(/class="f[ "]/g) ?? []).length
+  expect(falling(resting) > 0).toBe(true)
+  expect(falling(working) > falling(resting)).toBe(true)
+  for (const svg of [resting, working]) {
+    expect(svg.startsWith('<svg')).toBe(true)
+    expect(svg.length < 120000).toBe(true)
+    expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
+    expect(svg).toMatch(/@media \(prefers-color-scheme:dark\)/)
+    expect(svg).toMatch(/@keyframes fall\{/)
+    expect(svg).toMatch(/\.f\{[^}]*animation:fall /)
+    for (const zone of ['cr', 'lm', 'bn', 'mn', 'lh']) expect(svg.includes(`id="${zone}"`) && svg.includes(`begin="${zone}.click`)).toBe(true)
   }
 })
 

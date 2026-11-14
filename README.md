@@ -1,6 +1,6 @@
 # kindling
 
-Living backdrops for the Claude Code desktop app. One mod, `looks`, with nineteen themes that move while Claude works and rest while it waits.
+Living backdrops for the Claude Code desktop app. One mod, `looks`, with twenty themes that move while Claude works and rest while it waits.
 
 ![Маяк at night](previews/glyph-lighthouse-dark.jpg)
 
@@ -70,6 +70,15 @@ A wooded slope over a still lake, built from short strokes of paint: three hues 
 |---|---|
 | <img src="previews/stipple-lake-light.jpg" width="420"> | <img src="previews/stipple-lake-dark.jpg" width="420"> |
 | **Озеро** `stipple-lake`: a fisherman waits in an orange boat | while Claude works, the boat is paddled across the lake and pulls a wake |
+
+## Gouache: a November evening
+
+A lone maple on a hill, painted in flat gouache shapes. It sheds its leaves by a street lamp and a bench with a cat; far off there is a village and a lighthouse over a bay. It follows the app's scheme: a pale foggy day, or a starlit night with a crescent moon and lit windows. Click the crown for a flurry of leaves, the lamp to make it flicker, the bench to startle the cat, the moon for a ring of light and, at night, a shooting star.
+
+| Day | Night |
+|---|---|
+| <img src="previews/gouache-autumn-light.jpg" width="420"> | <img src="previews/gouache-autumn-dark.jpg" width="420"> |
+| **Осень** `gouache-autumn`: leaves come down one by one | while Claude works, the wind carries the leaves across the whole picture |
 
 ## Raster: print dither
 
