@@ -669,5 +669,46 @@ export const PALETTES: Record<string, any> = {
         "draft": "#5E5D59"
       }
     }
+  },
+  "sakura": {
+    "roles": {
+      "accent": "#a8321c",
+      "danger": "#a82a3a",
+      "success": "#3f6e3a",
+      "warning": "#8a5a0a",
+      "pro": "#6e4a9a"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#ece2cc",
+          "surface-1": "#f3ebd9",
+          "surface-2": "#f8f2e6",
+          "text-primary": "#1f1b16",
+          "text-secondary": "#463d33",
+          "text-muted": "#665a4c"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#e8735a",
+        "danger": "#e8707c",
+        "success": "#8fbf86",
+        "warning": "#e0aa4c",
+        "pro": "#b49cf0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#15130f",
+          "surface-1": "#1c1a15",
+          "surface-2": "#24211b",
+          "surface-3": "#2d2a22",
+          "text-primary": "#eee4d0",
+          "text-secondary": "#c9bda8",
+          "text-muted": "#a09482"
+        }
+      }
+    }
   }
 }

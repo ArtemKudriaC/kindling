@@ -92,7 +92,7 @@ test('every look draws an svg on desktop and nothing in the terminal', async ($,
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
-  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn', 'ember-core', 'ivory']) {
+  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn', 'ember-core', 'ivory', 'sakura']) {
     const ui = await $.ui.mount(backdrop(id))
     const svg = (await ui.find({ type: 'Svg' }))?.props.source
     expect(String(svg).startsWith('<svg')).toBe(true)
@@ -231,6 +231,57 @@ test('/look gouache-autumn wears Осень: listed, light and dark, leaves fall
     expect(svg).toMatch(/@keyframes fall\{/)
     expect(svg).toMatch(/\.f\{[^}]*animation:fall /)
     for (const zone of ['cr', 'lm', 'bn', 'mn', 'lh']) expect(svg.includes(`id="${zone}"`) && svg.includes(`begin="${zone}.click`)).toBe(true)
+  }
+})
+
+test('/look sakura wears Сакура: a shogun-era castle and cherry tree in ink in light and dark, petals fall down both sides at rest and the wind carries more at work, they hang beside the chat for a client without motion, the app plays it, no script', async ($, on) => {
+  const sets: Set[] = []
+  engine(on, sets)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+
+  expect((await $.command.run({ command: 'look', args: 'sakura' })).text).toMatch(/Сакура/)
+  expect(sets.at(-1)?.backdrop?.scene).toBe('sakura')
+
+  const idle = await $.ui.mount(backdrop('sakura'))
+  const resting = String((await idle.find({ type: 'Svg' }))?.props.source)
+  await idle.unmount()
+  await $.turn.start({ turnId: 't1' })
+  const busy = await $.ui.mount(backdrop('sakura'))
+  const working = String((await busy.find({ type: 'Svg' }))?.props.source)
+  await busy.unmount()
+
+  // a petal in the air is a group of class "f" that the fall keyframes carry; its style holds its way and timing
+  const petals = (svg: string) =>
+    [...svg.matchAll(/<g class="f[ "][^>]*style="([^"]*)"/g)].map(m => Object.fromEntries(m[1].split(';').map(d => d.split(':'))) as Record<string, string>)
+  expect(petals(resting).length > 0).toBe(true)
+  expect(petals(working).length > petals(resting).length).toBe(true)
+  for (const svg of [resting, working]) {
+    const air = petals(svg)
+    expect(air.every(p => parseFloat(p['animation-duration']) > 0 && parseFloat(p['--h']) > 0)).toBe(true)
+    // with all motion off a petal hangs at (--bx, --by): beside the chat, never behind it
+    const hang = air.filter(p => p.opacity !== '0').map(p => [parseFloat(p['--bx']), parseFloat(p['--by'])])
+    expect(hang.every(([x, y]) => x > 12 && x < 1588 && (x < 420 || x > 1175) && y > 40 && y < 880)).toBe(true)
+    expect(hang.filter(([x]) => x < 420).length >= 5).toBe(true)
+    expect(hang.filter(([x]) => x > 1175).length >= 5).toBe(true)
+    expect(svg).toMatch(/\.f\{transform:translate\(var\(--bx\),var\(--by\)\)/)
+    expect(svg).toMatch(/@keyframes fall\{/)
+    // one picture for both schemes: the day's sun and the night's moon and lantern light
+    expect(svg).toMatch(/@media \(prefers-color-scheme:dark\)/)
+    expect(svg.includes('class="L sun"') && svg.includes('class="D moon"') && svg.includes('class="D glow"')).toBe(true)
+    // the castle stands in the strip both layouts leave clear on the left, the tree's trunk in the one on the right
+    const keep = Number(svg.match(/<g class="castle" transform="translate\((\d+) /)?.[1])
+    // its whole width: the stone base (84 to each side) and both banners, poles and cloth
+    const poles = [...svg.matchAll(/<g class="pole" transform="translate\((-?\d+) 0\)">.*?d="M(-?\d+) -\d+h(\d+)/g)].map(m => [Number(m[1]) + Number(m[2]), Number(m[1]) + Number(m[2]) + Number(m[3])])
+    expect(poles.length).toBe(2)
+    const left = Math.min(-84, ...poles.map(p => p[0]))
+    const right = Math.max(84, ...poles.map(p => p[1]))
+    expect(keep + left >= 260 && keep + right <= 430).toBe(true)
+    const trunk = Number(svg.match(/<g class="tree" transform="translate\((\d+) /)?.[1])
+    expect(trunk >= 1282 && trunk <= 1600).toBe(true)
+    expect(svg).toMatch(/^<svg [^>]*preserveAspectRatio="xMinYMid slice"/)
+    expect(playsInApp(svg)).toBe(true)
+    expect(svg.length < 120000).toBe(true)
+    expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
   }
 })
 

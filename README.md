@@ -1,6 +1,6 @@
 # kindling
 
-Living backdrops for the Claude Code desktop app. One mod, `kindling`, with twenty-two themes that move while Claude works and rest while it waits. They draw only in the Code tab of the desktop app: in a terminal or VS Code, `/look` saves the choice and draws nothing.
+Living backdrops for the Claude Code desktop app. One mod, `kindling`, with twenty-three themes that move while Claude works and rest while it waits. They draw only in the Code tab of the desktop app: in a terminal or VS Code, `/look` saves the choice and draws nothing.
 
 ![Маяк at night](previews/glyph-lighthouse-dark.jpg)
 
@@ -90,6 +90,15 @@ A lone maple on a hill, painted in flat gouache shapes. It sheds its leaves by a
 |---|---|
 | ![](previews/gouache-autumn-light.jpg) | ![](previews/gouache-autumn-dark.jpg) |
 | **Осень** `gouache-autumn`: leaves come down one by one, on both sides of the chat | while Claude works, the wind carries the leaves across the whole picture |
+
+## Sumi-e: Japan of the shoguns
+
+Ink on old paper, in the manner of shogun-era painting. A castle keep stands on its hill under a red sun, with two war banners and ink pines; far mountains fade into mist, geese cross the sky, and an old cherry tree leans in from the right while a blossoming branch reaches in at the top. It follows the app's scheme: pale paper by day, or dark paper at night with the moon and lit castle windows.
+
+| Day | Night |
+|---|---|
+| ![](previews/sakura-light.jpg) | ![](previews/sakura-dark.jpg) |
+| **Сакура** `sakura`: petals drift down on both sides of the chat | while Claude works, the wind carries the petals across, the tree sways and the banners fly |
 
 ## Raster: print dither
 

@@ -13,6 +13,7 @@ import { glyphLighthouseScene } from './scenes/glyph-lighthouse'
 import { glyphSparkScene } from './scenes/glyph-spark'
 import { glyphTrainScene } from './scenes/glyph-train'
 import { gouacheAutumnScene } from './scenes/gouache-autumn'
+import { sakuraScene } from './scenes/sakura'
 import { hackerScene } from './scenes/hacker'
 import { homeScene } from './scenes/home'
 import { kosterScene } from './scenes/koster'
@@ -191,6 +192,13 @@ const LOOKS = {
     glass: { blur: 16, opacity: 0.5 },
     live: true,
     scene: a => glyphSparkScene(a === 'idle' ? 'idle' : 'busy', 'ivory'),
+  },
+  sakura: {
+    title: 'Сакура',
+    blurb: 'Япония сёгунов тушью на старой бумаге: замок на холме под красным солнцем, горы в тумане и старая вишня; ночью луна и огни в окнах; пока Claude работает, ветер несёт лепестки через всю картину и треплет знамёна',
+    glass: { blur: 14, opacity: 0.55 },
+    live: true,
+    scene: a => sakuraScene(a === 'idle' ? 'idle' : 'busy'),
   },
 } satisfies Record<string, Look>
 
