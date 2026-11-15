@@ -26,7 +26,7 @@ import { stippleLakeScene } from './scenes/stipple-lake'
 import { terracottaScene } from './scenes/terracotta'
 import { trainingScene } from './scenes/training'
 
-const PLUGIN = 'looks'
+const PLUGIN = 'kindling'
 const COMMAND = 'look'
 const DEFAULT = 'koster' as const
 // How often an open chat checks whether another chat chose a different look.
@@ -198,8 +198,8 @@ type LookId = keyof typeof LOOKS
 const isLook = (id: unknown): id is LookId => typeof id === 'string' && Object.hasOwn(LOOKS, id)
 const lookOf = (id: string): Look => (isLook(id) ? LOOKS[id] : LOOKS[DEFAULT])
 
-const activity = atom({ plugin: 'looks', key: 'activity' } as const, 'idle' as Activity)
-const state = atom({ plugin: 'looks', key: 'state' } as const, { look: DEFAULT } as LookState)
+const activity = atom({ plugin: 'kindling', key: 'activity' } as const, 'idle' as Activity)
+const state = atom({ plugin: 'kindling', key: 'state' } as const, { look: DEFAULT } as LookState)
 
 const colorsOf = (id: string) => {
   const { theme, problems } = makeColors({ label: lookOf(id).title, ...PALETTES[id] })

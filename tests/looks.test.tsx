@@ -1,3 +1,4 @@
+// @ts-nocheck ponytail: the test harness fakes partial engine inputs; checked by running, not by tsc
 import { expect, test } from 'claude-code/testing'
 
 import { PALETTES } from '../hooks/palettes'
@@ -21,7 +22,7 @@ const engine = (on: any, sets: Set[], store: Record<string, unknown> = {}, drawn
   on('turn.complete', () => ({ text: '' }))
 }
 
-const backdrop = (scene: string) => ({ plugin: 'looks', component: 'Backdrop', requestId: 'theme', surface: 'desktop', props: { plugin: 'looks', scene, glass: {} } }) as const
+const backdrop = (scene: string) => ({ plugin: 'kindling', component: 'Backdrop', requestId: 'theme', surface: 'desktop', props: { plugin: 'kindling', scene, glass: {} } }) as const
 
 test('a new session wears Костёр, and a saved look wins', async ($, on) => {
   const sets: Set[] = []

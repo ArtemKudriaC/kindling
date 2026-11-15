@@ -3,6 +3,6 @@ export type LookState = { look: string; recovery?: number; garden?: number }
 
 declare module 'claude-code' {
   interface PluginState {
-    looks: { activity: Activity; state: LookState }
+    kindling: { activity: Activity; state: LookState }
   }
 }

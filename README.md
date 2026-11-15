@@ -1,6 +1,6 @@
 # kindling
 
-Living backdrops for the Claude Code desktop app. One mod, `looks`, with twenty-two themes that move while Claude works and rest while it waits.
+Living backdrops for the Claude Code desktop app. One mod, `kindling`, with twenty-two themes that move while Claude works and rest while it waits. They draw only in the Code tab of the desktop app: in a terminal or VS Code, `/look` saves the choice and draws nothing.
 
 ![Маяк at night](previews/glyph-lighthouse-dark.jpg)
 
@@ -9,7 +9,7 @@ Living backdrops for the Claude Code desktop app. One mod, `looks`, with twenty-
 At the prompt of a terminal session:
 
 ```
-/plugin install looks --marketplace ArtemKudriaC/kindling
+/plugin install kindling --marketplace ArtemKudriaC/kindling
 ```
 
 Answer `y` to add the marketplace, then pick a scope with Enter.
@@ -17,7 +17,7 @@ Answer `y` to add the marketplace, then pick a scope with Enter.
 From a shell:
 
 ```
-claude plugin install looks --marketplace ArtemKudriaC/kindling
+claude plugin install kindling --marketplace ArtemKudriaC/kindling
 ```
 
 In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `ArtemKudriaC/kindling`, then Add plugin.
@@ -25,8 +25,10 @@ In the desktop app: click + next to the prompt box, then Plugins, Add marketplac
 To get new themes later, update and restart:
 
 ```
-claude plugin update looks@kindling
+claude plugin update kindling@kindling
 ```
+
+Installed it before 0.5.0, when the plugin was called `looks`? Run `claude plugin uninstall looks@kindling`, then install `kindling` as above. The saved look starts again from Костёр.
 
 A chat keeps the version it started with: other chats show a new theme only after the plugin is updated and they are restarted.
 
@@ -53,13 +55,13 @@ Every object is rasterized into small tiles, one monospace character each, shade
 
 | Day | Night |
 |---|---|
-| <img src="previews/glyph-lighthouse-light.jpg" width="420"> | <img src="previews/glyph-lighthouse-dark.jpg" width="420"> |
+| ![](previews/glyph-lighthouse-light.jpg) | ![](previews/glyph-lighthouse-dark.jpg) |
 | **Маяк** `glyph-lighthouse`: a lighthouse, a boat and the sea | the beam sweeps and the boat sails while Claude works |
-| <img src="previews/glyph-balloons-light.jpg" width="420"> | <img src="previews/glyph-balloons-dark.jpg" width="420"> |
+| ![](previews/glyph-balloons-light.jpg) | ![](previews/glyph-balloons-dark.jpg) |
 | **Шары** `glyph-balloons`: three hot-air balloons over hills | at night they glow from the burners |
-| <img src="previews/glyph-dandelion-light.jpg" width="420"> | <img src="previews/glyph-dandelion-dark.jpg" width="420"> |
+| ![](previews/glyph-dandelion-light.jpg) | ![](previews/glyph-dandelion-dark.jpg) |
 | **Одуванчики** `glyph-dandelion`: a meadow seen from low down | at dusk the heads are seed clocks and the wind carries seeds |
-| <img src="previews/glyph-train-light.jpg" width="420"> | <img src="previews/glyph-train-dark.jpg" width="420"> |
+| ![](previews/glyph-train-light.jpg) | ![](previews/glyph-train-dark.jpg) |
 | **Поезд** `glyph-train`: a small railway in hill country | signal green, the steam train runs through the tunnel |
 
 ## Spark: a backdrop about AI
@@ -68,7 +70,7 @@ A spark of lettered tiles in the right margin, a small creature beside the input
 
 | Light | Dark |
 |---|---|
-| <img src="previews/ivory.jpg" width="420"> | <img src="previews/ember-core.jpg" width="420"> |
+| ![](previews/ivory.jpg) | ![](previews/ember-core.jpg) |
 | **Слоновая кость** `ivory`: terracotta and lime on ivory | **Тлеющее ядро** `ember-core`: red, orange and acid green on warm black |
 
 ## Stipple: a painting in dabs
@@ -77,7 +79,7 @@ A wooded slope over a still lake, built from short strokes of paint: three hues 
 
 | Morning | Night |
 |---|---|
-| <img src="previews/stipple-lake-light.jpg" width="420"> | <img src="previews/stipple-lake-dark.jpg" width="420"> |
+| ![](previews/stipple-lake-light.jpg) | ![](previews/stipple-lake-dark.jpg) |
 | **Озеро** `stipple-lake`: a fisherman waits in an orange boat | while Claude works, the boat is paddled across the lake and pulls a wake |
 
 ## Gouache: a November evening
@@ -86,7 +88,7 @@ A lone maple on a hill, painted in flat gouache shapes. It sheds its leaves by a
 
 | Day | Night |
 |---|---|
-| <img src="previews/gouache-autumn-light.jpg" width="420"> | <img src="previews/gouache-autumn-dark.jpg" width="420"> |
+| ![](previews/gouache-autumn-light.jpg) | ![](previews/gouache-autumn-dark.jpg) |
 | **Осень** `gouache-autumn`: leaves come down one by one, on both sides of the chat | while Claude works, the wind carries the leaves across the whole picture |
 
 ## Raster: print dither
@@ -95,26 +97,26 @@ A solid pixel mosaic with ordered dither.
 
 | | |
 |---|---|
-| <img src="previews/raster.jpg" width="420"> | <img src="previews/raster-ide.jpg" width="420"> |
+| ![](previews/raster.jpg) | ![](previews/raster-ide.jpg) |
 | **Растр** `raster`: lime and navy fields and a branch | **Растр: IDE** `raster-ide`: IDE colours and curly braces; click near an edge for a pixel wave |
-| <img src="previews/raster-code.jpg" width="420"> | |
+| ![](previews/raster-code.jpg) | |
 | **Растр: Код** `raster-code`: warm colours and a flowering branch; click near an edge for a pixel flower, click the branch to drop petals | |
 
 ## Scenes
 
 | | |
 |---|---|
-| <img src="previews/koster.jpg" width="420"> | <img src="previews/dark-side.jpg" width="420"> |
+| ![](previews/koster.jpg) | ![](previews/dark-side.jpg) |
 | **Костёр** `koster`: embers glow while Claude waits and flare while it works | **Тёмная сторона** `dark-side`: a cloaked figure, the red blade brightens while Claude works |
-| <img src="previews/terracotta.jpg" width="420"> | <img src="previews/clay.jpg" width="420"> |
+| ![](previews/terracotta.jpg) | ![](previews/clay.jpg) |
 | **Терракота** `terracotta`: a clay wall, sun patches by day and lamplight in the evening | **Глина** `clay`: warm ivory and clay shapes that come alive while Claude works |
-| <img src="previews/manuscript.jpg" width="420"> | <img src="previews/garden.jpg" width="420"> |
+| ![](previews/manuscript.jpg) | ![](previews/garden.jpg) |
 | **Рукопись** `manuscript`: parchment, an illuminated initial and a verse a day (Synodal translation) | **Сад привычек** `garden`: a plant that grows with the habits you kept this week |
-| <img src="previews/recovery.jpg" width="420"> | <img src="previews/training.jpg" width="420"> |
+| ![](previews/recovery.jpg) | ![](previews/training.jpg) |
 | **Восстановление** `recovery`: colour and pulse follow the day's recovery score | **Тренировка** `training`: the track runs while Claude works, a rest timer while it waits |
-| <img src="previews/home.jpg" width="420"> | <img src="previews/month-end.jpg" width="420"> |
+| ![](previews/home.jpg) | ![](previews/month-end.jpg) |
 | **Умный дом** `home`: a floor plan in thin lines and a Raspberry Pi in the corner | **Конец месяца** `month-end`: a month calendar where Polish tax dates (ZUS, PIT, JPK) surface as they near |
-| <img src="previews/hacker.jpg" width="420"> | |
+| ![](previews/hacker.jpg) | |
 | **Хакер** `hacker`: a green terminal, lines run while Claude works | |
 
 ## Develop
