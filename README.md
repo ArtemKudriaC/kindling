@@ -73,12 +73,12 @@ A wooded slope over a still lake, built from short strokes of paint: three hues 
 
 ## Gouache: a November evening
 
-A lone maple on a hill, painted in flat gouache shapes. It sheds its leaves by a street lamp and a bench with a cat; far off there is a village and a lighthouse over a bay. It follows the app's scheme: a pale foggy day, or a starlit night with a crescent moon and lit windows. Click the crown for a flurry of leaves, the lamp to make it flicker, the bench to startle the cat, the moon for a ring of light and, at night, a shooting star.
+A lone maple on a hill, painted in flat gouache shapes. It sheds its leaves by a street lamp and a bench with a cat; to the left a lighthouse stands on its cliff above a bay, with the keeper's house and a footpath down through tall grass; far off there is a village. It follows the app's scheme: a pale foggy day, or a starlit night with a crescent moon and lit windows. Click the crown for a flurry of leaves, the lamp to make it flicker, the bench to startle the cat, the moon for a ring of light and, at night, a shooting star.
 
 | Day | Night |
 |---|---|
 | <img src="previews/gouache-autumn-light.jpg" width="420"> | <img src="previews/gouache-autumn-dark.jpg" width="420"> |
-| **Осень** `gouache-autumn`: leaves come down one by one | while Claude works, the wind carries the leaves across the whole picture |
+| **Осень** `gouache-autumn`: leaves come down one by one, on both sides of the chat | while Claude works, the wind carries the leaves across the whole picture |
 
 ## Raster: print dither
 

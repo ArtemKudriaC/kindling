@@ -128,7 +128,40 @@ test('/look stipple-lake wears Озеро: listed, two states, each under 120000
   }
 })
 
-test('/look gouache-autumn wears Осень: listed, light and dark, leaves fall at rest and more of them at work, clicks answer, no script', async ($, on) => {
+// The desktop app plays a mod's scene only when every element, attribute value and style passes its own lists; a scene
+// that fails is drawn with all motion stripped. These are the app's rules, read from the build it loads, so a look that
+// must move is held to them here.
+const PLAYS = {
+  tags: new Set('animate animateMotion animateTransform set circle clipPath defs desc ellipse feBlend feComposite feDropShadow feFlood feGaussianBlur feMerge feMergeNode feOffset filter g line linearGradient marker mask mpath path pattern polygon polyline radialGradient rect stop style svg symbol text textPath title tspan use'.split(' ')),
+  fns: new Set('color color-mix hsl hsla hwb lab lch light-dark oklab oklch rgb rgba abs acos asin atan atan2 calc clamp cos exp hypot log max min mod pow rem round sign sin sqrt tan var matrix matrix3d perspective rotate rotate3d rotatex rotatey rotatez scale scale3d scalex scaley scalez skew skewx skewy translate translate3d translatex translatey translatez cubic-bezier linear steps blur drop-shadow grayscale hue-rotate invert opacity saturate sepia is not nth-child nth-last-child nth-last-of-type nth-of-type where'.split(' ')),
+  ats: new Set(['keyframes', 'layer', 'media', 'supports']),
+}
+const cssPlays = (css: string): boolean => {
+  if (css.includes('\\') || /(?:\d|\.)(?:[dsl]?v(?:w|h|i|b|min|max)|cq(?:w|h|i|b|min|max))(?![a-z0-9_-])/i.test(css) || /shape-rendering|vector-effect/i.test(css)) return false
+  const plain = /\(\s*(?:prefers-reduced-motion(?:\s*:\s*(?:reduce|no-preference))?|prefers-color-scheme(?:\s*:\s*(?:dark|light))?)\s*\)/gi
+  const media = [...css.matchAll(/@media([^{]*)(\{|$)/gi)]
+  if (!media.every(([, q = '', open]) => open === '{' && /^(?:\s|,|all|and|not|only|or|screen)*$/i.test(q.replaceAll(plain, '')))) return false
+  const bare = css.replaceAll(/[\s\p{Cc}]/gu, '').toLowerCase()
+  if (bare.includes('data:') || bare.replaceAll(/url\(#[a-z_][\w.:-]*\)/g, '').includes('url(')) return false
+  return (
+    [...css.matchAll(/([^\s()[\]{}<>;:,'"`=+*/!@#$%^&|~?]{0,64})\(/g)].every(([, f = '']) => f === '' || f.toLowerCase() === 'url' || PLAYS.fns.has(f.toLowerCase())) &&
+    [...css.matchAll(/@([^\s{};("'/]*)/g)].every(([, a = '']) => PLAYS.ats.has(a.toLowerCase()))
+  )
+}
+const playsInApp = (svg: string): boolean =>
+  [...svg.matchAll(/<([A-Za-z][\w:-]*)/g)].every(([, t]) => PLAYS.tags.has(t)) &&
+  [...svg.matchAll(/\s[\w:-]+="([^"]*)"/g)].every(([, v]) => cssPlays(v)) &&
+  [...svg.matchAll(/\shref="([^"]*)"/g)].every(([, h]) => /^#[A-Za-z_][\w.:-]*$/.test(h)) &&
+  !/\son\w+=/i.test(svg) &&
+  // the app reads these two words in attribute names too, and the port above reads double-quoted values only
+  !/shape-rendering|vector-effect/i.test(svg) &&
+  !/\s[\w:-]+='/.test(svg) &&
+  // the app refuses an animation of href, media or style, and of the root's width or height: here, of any width or height
+  [...svg.matchAll(/\sattributeName="([^"]*)"/g)].every(([, n]) => !['href', 'media', 'style', 'width', 'height'].includes(n.trim().toLowerCase().replace(/^.*:/s, ''))) &&
+  // a style element holds text only
+  [...svg.matchAll(/<style>([\s\S]*?)<\/style>/g)].every(([, css]) => !css.includes('<') && cssPlays(css))
+
+test('/look gouache-autumn wears Осень: listed, light and dark, leaves fall down both sides at rest and more of them at work, they hang in the air for a client without motion, the lighthouse has its parts, clicks answer, no script', async ($, on) => {
   const sets: Set[] = []
   engine(on, sets)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
@@ -145,15 +178,55 @@ test('/look gouache-autumn wears Осень: listed, light and dark, leaves fall
   const working = String((await busy.find({ type: 'Svg' }))?.props.source)
   await busy.unmount()
 
-  // a leaf in the air is a group of class "f" that the fall keyframes carry
-  const falling = (svg: string) => (svg.match(/class="f[ "]/g) ?? []).length
+  // a leaf in the air is a group of class "f" that the fall keyframes carry; its style holds the path and the timing
+  const leaves = (svg: string) =>
+    [...svg.matchAll(/<g class="f[ "][^>]*style="([^"]*)"/g)].map(m => Object.fromEntries(m[1].split(';').map(d => d.split(':'))) as Record<string, string>)
+  const falling = (svg: string) => leaves(svg).length
   expect(falling(resting) > 0).toBe(true)
   expect(falling(working) > falling(resting)).toBe(true)
   for (const svg of [resting, working]) {
+    const air = leaves(svg)
+    // every leaf moves: it has a way down and a time to take it
+    expect(air.every(l => parseFloat(l['animation-duration']) > 0 && parseFloat(l['--h']) > 0)).toBe(true)
+    // the chat column covers the middle, so both side margins hold leaves. --bx and --by are where a leaf hangs when
+    // a client draws the picture with all motion off (the desktop app does, on its own rule)
+    // a leaf whose way never crosses a side lane is hidden while still (opacity:0), so none rests behind the chat
+    const hang = air.filter(l => l.opacity !== '0').map(l => [parseFloat(l['--bx']), parseFloat(l['--by'])])
+    expect(hang.every(([x, y]) => x > 12 && x < 1588 && (x < 420 || x > 1175) && y > 40 && y < 880)).toBe(true)
+    expect(hang.filter(([x]) => x < 420).length >= 5).toBe(true)
+    expect(hang.filter(([x]) => x > 1175).length >= 5).toBe(true)
+    expect(svg).toMatch(/\.f\{transform:translate\(var\(--bx\),var\(--by\)\)/)
+    // the lighthouse and the keeper's house stand in the strip that the app's sidebar (open, it covers the left 260 of
+    // the picture) and the chat column (it starts near 430 with the sidebar closed) both leave clear
+    const hx = Number(svg.match(/<g class="hl"><g transform="translate\((\d+) 0\)">/)?.[1])
+    const at = Number(svg.match(/<g transform="translate\((\d+) 590\) scale\(1\.12\)">/)?.[1]) + hx
+    expect(at - 96 * 1.12 >= 258 && at + 56 * 1.12 <= 432).toBe(true)
+    // the lighthouse: a shaded tower with a red band, windows, a railed gallery, a glazed lamp room, and two beams at night
+    const tower = svg.slice(svg.indexOf('<g transform="translate(142 590)'), svg.indexOf('id="lh"'))
+    const parts = (cls: string) => tower.split(`class="${cls}"`).length - 1
+    // white tower and its shade, red band and red cap, lit windows, lamp room, both beams
+    for (const [cls, n] of [['lw', 1], ['ls', 1], ['lr', 2], ['wn', 2], ['ll', 1], ['D bm', 1]] as const) expect(parts(cls) >= n).toBe(true)
+    // fine line work: the fence on the brow, the gallery rail, the lamp room's glazing bars, the vane
+    expect(parts('lks') >= 4).toBe(true)
+    expect(tower.includes('url(#beam)') && tower.includes('url(#beam2)')).toBe(true)
     expect(svg.startsWith('<svg')).toBe(true)
     expect(svg.length < 120000).toBe(true)
     expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
     expect(svg).toMatch(/@media \(prefers-color-scheme:dark\)/)
+    // the app plays it: nothing in the scene is off the app's lists, and the two things that once were (a grain made with
+    // feTurbulence, a re-composition under an aspect-ratio media rule) stop it again
+    expect(playsInApp(svg)).toBe(true)
+    expect(playsInApp(svg.replace('<defs>', '<defs><filter id="q"><feTurbulence/></filter>'))).toBe(false)
+    expect(playsInApp(svg.replace('</style>', '@media (max-aspect-ratio:1/1){.f{opacity:1}}</style>'))).toBe(false)
+    expect(playsInApp(svg.replace('</style>', '.f{offset-path:path("M0 0L9 9")}</style>'))).toBe(false)
+    expect(playsInApp(svg.replace('attributeName="r"', 'attributeName="style"'))).toBe(false)
+    expect(playsInApp(svg.replace('<path ', '<path shape-rendering="crispEdges" '))).toBe(false)
+    // a window narrower than the picture keeps its left side, the edge the sidebar is on: the lighthouse, the moon and
+    // the left lane of leaves stay in view; the lighthouse's long beam ends inside the strip an open sidebar leaves
+    // clear (x below 572), so the chat's edge does not cut it
+    expect(svg).toMatch(/^<svg [^>]*preserveAspectRatio="xMinYMid slice"/)
+    const reach = Number(svg.match(/<path d="M0 -141L(\d+) [^"]*" fill="url\(#beam\)"\/>/)?.[1])
+    expect(at + reach * 1.12 < 572).toBe(true)
     expect(svg).toMatch(/@keyframes fall\{/)
     expect(svg).toMatch(/\.f\{[^}]*animation:fall /)
     for (const zone of ['cr', 'lm', 'bn', 'mn', 'lh']) expect(svg.includes(`id="${zone}"`) && svg.includes(`begin="${zone}.click`)).toBe(true)
