@@ -39,7 +39,7 @@ function stroke(pts: Pt[], w0: number, w1: number, cls: string): string {
 }
 
 /** A limb as one filled shape along c, tapering from w0 to w1, its edges a little uneven like a brush. */
-function limb(c: Pt[], w0: number, w1: number): string {
+export function limb(c: Pt[], w0: number, w1: number): string {
   const n = c.length - 1
   const L: string[] = []
   const R: string[] = []
@@ -60,7 +60,7 @@ function limb(c: Pt[], w0: number, w1: number): string {
 }
 
 /** A smooth line through pts, sampled: Catmull-Rom, k samples per span. */
-function curve(pts: Pt[], k = 6): Pt[] {
+export function curve(pts: Pt[], k = 6): Pt[] {
   const out: Pt[] = []
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(0, i - 1)]

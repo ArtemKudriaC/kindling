@@ -1,6 +1,6 @@
 # kindling
 
-Living backdrops for the Claude Code desktop app. One mod, `kindling`, with twenty-three themes that move while Claude works and rest while it waits. They draw only in the Code tab of the desktop app: in a terminal or VS Code, `/look` saves the choice and draws nothing.
+Living backdrops for the Claude Code desktop app. One mod, `kindling`, with twenty-four themes that move while Claude works and rest while it waits. They draw only in the Code tab of the desktop app: in a terminal or VS Code, `/look` saves the choice and draws nothing.
 
 ![Маяк at night](previews/glyph-lighthouse-dark.jpg)
 
@@ -99,6 +99,15 @@ Ink on old paper, in the manner of shogun-era painting. A castle keep stands on 
 |---|---|
 | ![](previews/sakura-light.jpg) | ![](previews/sakura-dark.jpg) |
 | **Сакура** `sakura`: petals drift down on both sides of the chat | while Claude works, the wind carries the petals across, the tree sways and the banners fly |
+
+## Ukiyo-e: an evening bay in woodblock print
+
+Flat colour inside black key-block lines that swell and taper like a cut line, colour graded at the top of the sky, at the horizon and along the lower edge of the mist, wood grain and paper fibres: a woodblock print of the Edo period, drawn from scratch. On the left a vermilion gate stands in the water and the sun sets between its pillars, a fisherman sits in his skiff below it, and a cartouche in the corner holds the print's title and a seal. On the right a snow mountain rises out of a band of mist, an old pine leans out from a rock beside a stone lantern, a boat lies off the headland and a wave breaks below the rock. It follows the app's scheme: an evening print by day, or a night print with the moon, the lit lantern and lamps on the boats.
+
+| Day | Night |
+|---|---|
+| ![](previews/ukiyo-e-light.jpg) | ![](previews/ukiyo-e-dark.jpg) |
+| **Укиё-э** `ukiyo-e`: a slow swell, the boats rock, the sail is stowed | while Claude works, the wind rises: mist drifts across the gate, the fisherman casts his net, the sail is set, more crests break and throw spray |
 
 ## Raster: print dither
 

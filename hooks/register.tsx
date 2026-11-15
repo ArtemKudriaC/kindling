@@ -14,6 +14,7 @@ import { glyphSparkScene } from './scenes/glyph-spark'
 import { glyphTrainScene } from './scenes/glyph-train'
 import { gouacheAutumnScene } from './scenes/gouache-autumn'
 import { sakuraScene } from './scenes/sakura'
+import { ukiyoeScene } from './scenes/ukiyo-e'
 import { hackerScene } from './scenes/hacker'
 import { homeScene } from './scenes/home'
 import { kosterScene } from './scenes/koster'
@@ -199,6 +200,13 @@ const LOOKS = {
     glass: { blur: 14, opacity: 0.55 },
     live: true,
     scene: a => sakuraScene(a === 'idle' ? 'idle' : 'busy'),
+  },
+  'ukiyo-e': {
+    title: 'Укиё-э',
+    blurb: 'японская гравюра на дереве: красные ворота в заливе, сквозь них садится солнце, под ними рыбак в лодке; справа снежная гора над полосой тумана, сосна и каменный фонарь на скале, под ней разбивается волна; ночью луна, фонарь и огни лодок; пока Claude работает, поднимается ветер: туман идёт через ворота, рыбак бросает сеть, на лодке ставят парус, гребни и брызги',
+    glass: { blur: 16, opacity: 0.62 },
+    live: true,
+    scene: a => ukiyoeScene(a === 'idle' ? 'idle' : 'busy'),
   },
 } satisfies Record<string, Look>
 

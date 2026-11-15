@@ -92,7 +92,7 @@ test('every look draws an svg on desktop and nothing in the terminal', async ($,
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
-  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn', 'ember-core', 'ivory', 'sakura']) {
+  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn', 'ember-core', 'ivory', 'sakura', 'ukiyo-e']) {
     const ui = await $.ui.mount(backdrop(id))
     const svg = (await ui.find({ type: 'Svg' }))?.props.source
     expect(String(svg).startsWith('<svg')).toBe(true)
@@ -278,6 +278,68 @@ test('/look sakura wears Сакура: a shogun-era castle and cherry tree in in
     expect(keep + left >= 260 && keep + right <= 430).toBe(true)
     const trunk = Number(svg.match(/<g class="tree" transform="translate\((\d+) /)?.[1])
     expect(trunk >= 1282 && trunk <= 1600).toBe(true)
+    expect(svg).toMatch(/^<svg [^>]*preserveAspectRatio="xMinYMid slice"/)
+    expect(playsInApp(svg)).toBe(true)
+    expect(svg.length < 120000).toBe(true)
+    expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
+  }
+})
+
+test('/look ukiyo-e wears Укиё-э: a woodblock print of a bay, a gate in the water, a pine and a lantern on a rock, in light and dark; the wind raises crests and spray at work and rocks the boats faster; nothing stands behind the chat, the app plays it, no script', async ($, on) => {
+  const sets: Set[] = []
+  engine(on, sets)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+
+  expect((await $.command.run({ command: 'look', args: 'ukiyo-e' })).text).toMatch(/Укиё-э/)
+  expect(sets.at(-1)?.backdrop?.scene).toBe('ukiyo-e')
+
+  const idle = await $.ui.mount(backdrop('ukiyo-e'))
+  const resting = String((await idle.find({ type: 'Svg' }))?.props.source)
+  await idle.unmount()
+  await $.turn.start({ turnId: 't1' })
+  const busy = await $.ui.mount(backdrop('ukiyo-e'))
+  const working = String((await busy.find({ type: 'Svg' }))?.props.source)
+  await busy.unmount()
+
+  // the wind: more breaking crests, spray only at work, and the boats rock faster
+  const count = (svg: string, cls: string) => svg.split(`class="${cls}"`).length - 1
+  expect(count(working, 'cr') > count(resting, 'cr')).toBe(true)
+  expect(count(resting, 'sp')).toBe(0)
+  expect(count(working, 'sp') > 0).toBe(true)
+  const rock = (svg: string) => Number(svg.match(/\.bt\{animation:rock ([\d.]+)s/)?.[1])
+  expect(rock(working) < rock(resting)).toBe(true)
+
+  // the x of every point of a shape drawn in absolute pairs ("M261 432Q345 452 429 432")
+  const xs = (d: string) => [...d.matchAll(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].map(m => Number(m[1]))
+  for (const svg of [resting, working]) {
+    // one print for both schemes: the sun sets through the gate by day; at night the moon, the lantern and the boat lamps
+    expect(svg).toMatch(/@media \(prefers-color-scheme:dark\)/)
+    expect(['class="L sun"', 'class="D moon"', 'class="D glow"', 'class="D lamp"'].every(c => svg.includes(c))).toBe(true)
+    // each print has its title in Japanese in a cartouche
+    for (const t of ['L tt', 'D tt']) expect(svg.match(new RegExp(`class="${t}"[^>]*>(.*?)</text>`))?.[1]).toMatch(/[぀-ヿ一-鿿]/)
+    // the gate stands in the strip both layouts leave clear on the left: every point of it
+    const gate = xs(svg.match(/<g id="tg">(.*?)<\/g>/)?.[1] ?? '')
+    expect(gate.length > 8 && Math.min(...gate) >= 260 && Math.max(...gate) <= 430).toBe(true)
+    // the pine and the lantern stand in the strip on the right
+    for (const [cls, inner] of [['pine', '<g class="sw">'], ['lantern', '']]) {
+      const m = svg.match(new RegExp(`<g class="${cls}" transform="translate\\((-?\\d+) (-?\\d+)\\)">${inner}(.*?)</g>`))
+      const x = xs(m?.[3] ?? '').map(v => v + Number(m?.[1]))
+      expect(x.length > 8 && Math.min(...x) >= 1282 && Math.max(...x) <= 1600).toBe(true)
+    }
+    // no crest or boat stands behind the chat: each one's whole width, from its shape and its scale
+    const half = (id: string) => Math.max(...xs(svg.match(new RegExp(`<g id="${id}">(.*?)</g>`))?.[1] ?? '').map(Math.abs))
+    const put = [...svg.matchAll(/<g class="(crest|boat)" transform="translate\((-?\d+) (-?\d+)\) scale\(([\d.]+)\)">/g)]
+    expect(put.filter(p => p[1] === 'boat').length >= 2 && put.filter(p => p[1] === 'crest').length >= 2).toBe(true)
+    // a crest also where its surge carries it: the far end of its cb keyframes (shift and grow are linear in between)
+    const surge = svg.match(/@keyframes cb\{from\{transform:scale\(1\)\}to\{transform:translate\((-?[\d.]+)px,-?[\d.]+px\) scale\(([\d.]+)\)\}\}/)
+    expect(surge).toBeTruthy()
+    for (const [, k, x, , s] of put) {
+      const w = half(k === 'crest' ? 'cw' : 'bh') * Number(s)
+      for (const [dx, sc] of k === 'crest' ? [[0, 1], [Number(surge?.[1]), Number(surge?.[2])]] : [[0, 1]]) {
+        const [l, r] = [Number(x) + dx - w * sc, Number(x) + dx + w * sc]
+        expect(w > 20 && (r <= 430 || l >= 1282)).toBe(true)
+      }
+    }
     expect(svg).toMatch(/^<svg [^>]*preserveAspectRatio="xMinYMid slice"/)
     expect(playsInApp(svg)).toBe(true)
     expect(svg.length < 120000).toBe(true)

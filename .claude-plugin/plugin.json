@@ -1,7 +1,7 @@
 {
   "name": "kindling",
-  "version": "0.6.0",
-  "description": "Twenty-three living backdrops for the Claude Code desktop app that move while Claude works and rest while it waits; switch them with /look.",
+  "version": "0.7.0",
+  "description": "Twenty-four living backdrops for the Claude Code desktop app that move while Claude works and rest while it waits; switch them with /look.",
   "license": "MIT",
   "icon": "./.claude-plugin/icon.png",
   "types": "./types/index.d.ts",

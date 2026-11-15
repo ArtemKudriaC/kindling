@@ -710,5 +710,46 @@ export const PALETTES: Record<string, any> = {
         }
       }
     }
+  },
+  "ukiyo-e": {
+    "roles": {
+      "accent": "#b13a22",
+      "danger": "#a82a3a",
+      "success": "#3f6e3a",
+      "warning": "#8a5a0a",
+      "pro": "#3a5a9a"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#ece2cc",
+          "surface-1": "#f3ebd9",
+          "surface-2": "#f8f2e6",
+          "text-primary": "#1f1b16",
+          "text-secondary": "#463d33",
+          "text-muted": "#665a4c"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#ee7a62",
+        "danger": "#e8707c",
+        "success": "#9acb91",
+        "warning": "#e0aa4c",
+        "pro": "#9cb4f0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#0f1828",
+          "surface-1": "#141f33",
+          "surface-2": "#19253b",
+          "surface-3": "#1d2a42",
+          "text-primary": "#e9e4d6",
+          "text-secondary": "#c3c2bc",
+          "text-muted": "#9aa3b2"
+        }
+      }
+    }
   }
 }
