@@ -119,6 +119,27 @@ A solid pixel mosaic with ordered dither.
 | ![](previews/hacker.jpg) | |
 | **Хакер** `hacker`: a green terminal, lines run while Claude works | |
 
+## What it reads and sends
+
+Nothing leaves your computer. The mod makes no network calls, runs no programs and reads no files, keys or environment. `http://www.w3.org/2000/svg` in the scenes is the SVG namespace inside the drawings, not an address it contacts.
+
+Calls it makes, all Claude Code's own:
+
+- `theme.set` puts the chosen look on the window: its colours and its backdrop scene.
+- `store.get` and `store.set` remember which look you chose and whether the welcome note was shown. The store stays on this machine.
+- `command.register` adds `/look`. `ui.resolve` hands the scene to the backdrop. `ui.status` and `ui.toast` show a short line: why a look could not be drawn, or once which look you are wearing. `clock.every` checks every few seconds whether another chat picked a new look; `clock.after` ends Костёр's burst.
+
+Hooks:
+
+- `session.start` registers `/look` and puts on the saved look.
+- `command.run` answers `/look` only and lets every other command through.
+- `session.attach` shows the welcome note once, in the desktop app, while no look has been chosen yet.
+- `turn.start` and `turn.complete` switch a live scene between working and waiting. They read only that a turn started or ended; `turn.start` also checks the store for a look chosen in another chat.
+- `session.append` reads Claude's replies for the word "merged", which makes Костёр flare. The text is not kept or sent.
+- `ui.render` on `Backdrop` draws the scene; it leaves other plugins' backdrops alone.
+
+`hooks/make-colors.js` is the colour kit that Claude Code's plugin-authoring skill hands out, copied unchanged. It turns a palette into a theme and checks text contrast; its long hexadecimal strings are colour ramps.
+
 ## Develop
 
 ```

@@ -1,25 +1,673 @@
 // The makeColors argument of each look, minus its label.
 export const PALETTES: Record<string, any> = {
-  "clay": {"roles": {"accent": "#c96442", "danger": "#b3303f", "success": "#4f7f3a", "warning": "#a87118", "pro": "#7d5a9a"}, "light": {"gray": {"anchors": {"surface-0": "#efe6d6", "surface-1": "#f4ecde", "surface-2": "#f9f3e8", "text-primary": "#2b231c", "text-secondary": "#51463a", "text-muted": "#695c4d"}}}, "dark": {"gray": {"anchors": {"surface-0": "#1d1916", "surface-1": "#26211d", "surface-2": "#2f2924", "surface-3": "#38312b", "text-primary": "#f2e9dc", "text-secondary": "#d2c6b5", "text-muted": "#aa9e8d"}}}},
-  "dark-side": {"only": "dark", "roles": {"accent": "#e8485f", "danger": "#f0705f", "success": "#4cc790", "warning": "#e0a84a", "pro": "#a591e8"}, "dark": {"gray": {"anchors": {"surface-0": "#0a0c12", "surface-1": "#0f131b", "surface-2": "#151a24", "surface-3": "#1a202b", "text-primary": "#e4e9f2", "text-secondary": "#b5bece", "text-muted": "#8f9aae"}}}},
-  "garden": {"only": "light", "roles": {"accent": "#587A55", "danger": "#B8453A", "success": "#3F7D4B", "warning": "#A87414", "pro": "#8F5A78"}, "light": {"gray": {"anchors": {"surface-0": "#F1E8D6", "surface-1": "#F6EFE0", "surface-2": "#FAF5E9", "surface-3": "#FAF5E9", "text-primary": "#2B2A22", "text-secondary": "#4F4D3C", "text-muted": "#66624F"}}}},
-  "glyph-balloons": {"roles": {"accent": "#cf3f26", "danger": "#b3303f", "success": "#2f7a56", "warning": "#8f5a0c", "pro": "#5a58b0"}, "light": {"gray": {"anchors": {"surface-0": "#e3ebf3", "surface-1": "#ecf2f7", "surface-2": "#f5f8fb", "text-primary": "#14233f", "text-secondary": "#2c3d5c", "text-muted": "#4a5a76"}}}, "dark": {"roles": {"accent": "#f2a73c", "danger": "#ec7a86", "success": "#6fc89a", "warning": "#e8b04a", "pro": "#a4a0f0"}, "gray": {"anchors": {"surface-0": "#080d20", "surface-1": "#0e1530", "surface-2": "#151d3c", "surface-3": "#1b2546", "text-primary": "#e8edf8", "text-secondary": "#bcc6e0", "text-muted": "#8f9cc0"}}}},
-  "glyph-dandelion": {"roles": {"accent": "#8a5d00", "danger": "#b3303f", "success": "#3f7f4a", "warning": "#8f5a0c", "pro": "#6a5aa8"}, "light": {"gray": {"anchors": {"surface-0": "#dfe9cb", "surface-1": "#e8f0d8", "surface-2": "#f1f6e6", "text-primary": "#1d3320", "text-secondary": "#32503a", "text-muted": "#4a6850"}}}, "dark": {"roles": {"accent": "#f5c542", "danger": "#e8707c", "success": "#6fc08a", "warning": "#e0a43c", "pro": "#a898e0"}, "gray": {"anchors": {"surface-0": "#0d0b20", "surface-1": "#141130", "surface-2": "#1c1840", "surface-3": "#241f4c", "text-primary": "#ece8ff", "text-secondary": "#c4bde8", "text-muted": "#a49dcc"}}}},
-  "glyph-lighthouse": {"roles": {"accent": "#c93d22", "danger": "#b3303f", "success": "#3f7f4a", "warning": "#8f5a0c", "pro": "#6a5aa8"}, "light": {"gray": {"anchors": {"surface-0": "#e6dccb", "surface-1": "#eee5d6", "surface-2": "#f6efe3", "text-primary": "#14233f", "text-secondary": "#2c3d5c", "text-muted": "#4a5a76"}}}, "dark": {"roles": {"accent": "#f2b24c", "danger": "#e8707c", "success": "#6fc08a", "warning": "#e0a43c", "pro": "#a898e0"}, "gray": {"anchors": {"surface-0": "#0a141b", "surface-1": "#101c25", "surface-2": "#17242f", "surface-3": "#1a2833", "text-primary": "#e6eef2", "text-secondary": "#b9c9d2", "text-muted": "#8fa2ae"}}}},
-  "glyph-train": {"roles": {"accent": "#c0302a", "danger": "#b3303f", "success": "#2f7a48", "warning": "#8f5a0c", "pro": "#6a5aa8"}, "light": {"gray": {"anchors": {"surface-0": "#dce3d0", "surface-1": "#e6ecdb", "surface-2": "#eff3e5", "text-primary": "#10231a", "text-secondary": "#25382d", "text-muted": "#455a4c"}}}, "dark": {"roles": {"accent": "#f2b24c", "danger": "#e8707c", "success": "#6fc08a", "warning": "#e0a43c", "pro": "#a898e0"}, "gray": {"anchors": {"surface-0": "#080d18", "surface-1": "#0e1524", "surface-2": "#151d30", "surface-3": "#1a2338", "text-primary": "#e4ecf6", "text-secondary": "#b4c3d6", "text-muted": "#8c9db4"}}}},
-  "hacker": {"only": "dark", "roles": {"accent": "#3ee07a", "danger": "#f0705f", "success": "#4cc790", "warning": "#e8a63a", "pro": "#6bb6ff"}, "dark": {"gray": {"anchors": {"surface-0": "#101112", "surface-1": "#151617", "surface-2": "#1b1c1e", "surface-3": "#1f2021", "text-primary": "#ececec", "text-secondary": "#bbbec0", "text-muted": "#94989b"}}}},
-  "home": {"only": "dark", "roles": {"accent": "#F0A640", "danger": "#E0594C", "success": "#6FC28B", "warning": "#E8B84A", "pro": "#8FA6F0"}, "dark": {"gray": {"anchors": {"surface-0": "#0A1322", "surface-1": "#0F1A2D", "surface-2": "#142238", "surface-3": "#1A2A44", "text-primary": "#E8EEF7", "text-secondary": "#B8C6DA", "text-muted": "#90A4C0"}}}},
-  "koster": {"only": "dark", "roles": {"accent": "#E8943A", "danger": "#D9604A", "success": "#8FB37A", "warning": "#E3B341", "pro": "#B48EAD"}, "dark": {"gray": {"anchors": {"surface-0": "#1B1A18", "surface-1": "#22201C", "surface-2": "#27251F", "surface-3": "#2E2B25", "text-primary": "#E9E2D3", "text-secondary": "#C2BAA9", "text-muted": "#8A9A82"}}}},
-  "manuscript": {"roles": {"accent": "#2f5086", "danger": "#a8312a", "success": "#4a7a3a", "warning": "#9a6a14", "pro": "#7a4f8f"}, "light": {"gray": {"anchors": {"surface-0": "#eadfc3", "surface-1": "#f0e7cf", "surface-2": "#f6efdc", "text-primary": "#2a1f14", "text-secondary": "#51402c", "text-muted": "#66523a"}}}, "dark": {"roles": {"accent": "#d9ae55", "danger": "#d9625a", "success": "#8fb870", "warning": "#d9a441", "pro": "#b794cc"}, "gray": {"anchors": {"surface-0": "#1a1410", "surface-1": "#231b15", "surface-2": "#2c231b", "surface-3": "#352a21", "text-primary": "#f1e4c8", "text-secondary": "#d2c3a3", "text-muted": "#ab9b7c"}}}},
-  "month-end": {"only": "light", "roles": {"accent": "#2c5aa8", "danger": "#b0332c", "success": "#3f7a45", "warning": "#9a6a14", "pro": "#6a4f9a"}, "light": {"gray": {"anchors": {"surface-0": "#e3eaf5", "surface-1": "#ebf0f8", "surface-2": "#f3f6fb", "text-primary": "#14213a", "text-secondary": "#33466a", "text-muted": "#4a5d82"}}}},
-  "raster-code": {"only": "dark", "roles": {"accent": "#d97757", "danger": "#ee8174", "success": "#9bc886", "warning": "#e8bb4a", "pro": "#aa9be0"}, "dark": {"gray": {"anchors": {"surface-0": "#262624", "surface-1": "#2e2e2c", "surface-2": "#333331", "surface-3": "#383836", "text-primary": "#f0eee6", "text-secondary": "#c2c0b6", "text-muted": "#a4a299"}}}},
-  "raster-ide": {"only": "dark", "roles": {"accent": "#3574f0", "danger": "#e55765", "success": "#5fb865", "warning": "#f2c55c", "pro": "#a571e6"}, "dark": {"gray": {"anchors": {"surface-0": "#1e1f22", "surface-1": "#2b2d30", "surface-2": "#2f3134", "surface-3": "#33353a", "text-primary": "#dfe1e5", "text-secondary": "#b4b8bf", "text-muted": "#9a9ea8"}}}},
-  "raster": {"only": "dark", "roles": {"accent": "#b9e05a", "danger": "#f0735f", "success": "#58c98a", "warning": "#e6b04a", "pro": "#6fc4c0"}, "dark": {"gray": {"anchors": {"surface-0": "#0e1210", "surface-1": "#131815", "surface-2": "#191f1b", "surface-3": "#1d231f", "text-primary": "#eaf0e6", "text-secondary": "#b9c3b6", "text-muted": "#93a090"}}}},
-  "recovery": {"only": "dark", "roles": {"accent": "#4fc4a8", "danger": "#e0605a", "success": "#4cc790", "warning": "#e0a84a", "pro": "#8a9cf0"}, "dark": {"gray": {"anchors": {"surface-0": "#0b1118", "surface-1": "#101821", "surface-2": "#16202b", "surface-3": "#1c2733", "text-primary": "#e6edf3", "text-secondary": "#b6c3cf", "text-muted": "#8c9cab"}}}},
-  "stipple-lake": {"roles": {"accent": "#2747c9", "danger": "#b3303f", "success": "#2f7a56", "warning": "#8f5a0c", "pro": "#6a4fc0"}, "light": {"gray": {"anchors": {"surface-0": "#dde2f2", "surface-1": "#e7ebf7", "surface-2": "#f1f3fb", "text-primary": "#131c40", "text-secondary": "#2b3762", "text-muted": "#45517c"}}}, "dark": {"roles": {"accent": "#8ea4ff", "danger": "#e8707c", "success": "#6fc08a", "warning": "#e0a43c", "pro": "#b39cf0"}, "gray": {"anchors": {"surface-0": "#0a0e24", "surface-1": "#101636", "surface-2": "#171f48", "surface-3": "#1e2856", "text-primary": "#e8ecff", "text-secondary": "#c1c9ec", "text-muted": "#a0aad2"}}}},
-  "gouache-autumn": {"roles": {"accent": "#b5510f", "danger": "#b3303f", "success": "#3f7a3a", "warning": "#8f5e0a", "pro": "#7a4fb0"}, "light": {"gray": {"anchors": {"surface-0": "#efe6d6", "surface-1": "#f5eee1", "surface-2": "#faf5ec", "text-primary": "#241c18", "text-secondary": "#4d4038", "text-muted": "#6f6055"}}}, "dark": {"roles": {"accent": "#f0943a", "danger": "#e8707c", "success": "#8fc08a", "warning": "#e8b04c", "pro": "#b79cf0"}, "gray": {"anchors": {"surface-0": "#12141d", "surface-1": "#191c28", "surface-2": "#212534", "surface-3": "#2a2f41", "text-primary": "#efe6d8", "text-secondary": "#cbbfb0", "text-muted": "#a29789"}}}},
-  "terracotta": {"roles": {"accent": "#d77757", "danger": "#b3303f", "success": "#4f7f3a", "warning": "#a87118", "pro": "#8054a0"}, "light": {"gray": {"anchors": {"surface-0": "#e6aa80", "surface-1": "#eebb94", "surface-2": "#f4cba9", "text-primary": "#241008", "text-secondary": "#44200f", "text-muted": "#582f1b"}}}, "dark": {"gray": {"anchors": {"surface-0": "#231d1b", "surface-1": "#2c2522", "surface-2": "#352d29", "surface-3": "#3f3531", "text-primary": "#f4e6da", "text-secondary": "#d3beae", "text-muted": "#b09a8a"}}}},
-  "training": {"only": "dark", "roles": {"accent": "#ff6b3d", "danger": "#e5484d", "success": "#46a758", "warning": "#e0a526", "pro": "#8f7bd6"}, "dark": {"gray": {"anchors": {"surface-0": "#121417", "surface-1": "#1a1d21", "surface-2": "#22262b", "surface-3": "#2b3036", "text-primary": "#eceae6", "text-secondary": "#c4c2bd", "text-muted": "#9b9d9f"}}}},
-  "ember-core": {"only": "dark", "roles": {"accent": "#E8743B", "danger": "#D8302F", "success": "#B8FF3C", "warning": "#F2B33D", "pro": "#D690CB"}, "dark": {"gray": {"anchors": {"surface-0": "#14110F", "surface-1": "#1A1613", "surface-2": "#201B18", "surface-3": "#221D19", "text-primary": "#EDE6DD", "text-secondary": "#C4B8AB", "text-muted": "#A69A8E"}}, "git": {"added": "#B8FF3C", "removed": "#FF6466", "modified": "#F2B33D", "merged": "#D690CB", "closed": "#FF6466", "conflicting": "#F08A55", "draft": "#B3A79B"}}},
-  "ivory": {"only": "light", "roles": {"accent": "#C2552B", "danger": "#B02824", "success": "#3F7A12", "warning": "#9A6408", "pro": "#8A4F9E"}, "light": {"gray": {"anchors": {"surface-0": "#F0EEE6", "surface-1": "#F5F3EC", "surface-2": "#FAF9F5", "text-primary": "#141413", "text-secondary": "#3D3D3A", "text-muted": "#55544F"}}, "git": {"added": "#3F7A12", "removed": "#A82420", "modified": "#9A6408", "merged": "#8A4F9E", "closed": "#C4302B", "conflicting": "#C2552B", "draft": "#5E5D59"}}},
+  "clay": {
+    "roles": {
+      "accent": "#c96442",
+      "danger": "#b3303f",
+      "success": "#4f7f3a",
+      "warning": "#a87118",
+      "pro": "#7d5a9a"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#efe6d6",
+          "surface-1": "#f4ecde",
+          "surface-2": "#f9f3e8",
+          "text-primary": "#2b231c",
+          "text-secondary": "#51463a",
+          "text-muted": "#695c4d"
+        }
+      }
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#1d1916",
+          "surface-1": "#26211d",
+          "surface-2": "#2f2924",
+          "surface-3": "#38312b",
+          "text-primary": "#f2e9dc",
+          "text-secondary": "#d2c6b5",
+          "text-muted": "#aa9e8d"
+        }
+      }
+    }
+  },
+  "dark-side": {
+    "only": "dark",
+    "roles": {
+      "accent": "#e8485f",
+      "danger": "#f0705f",
+      "success": "#4cc790",
+      "warning": "#e0a84a",
+      "pro": "#a591e8"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#0a0c12",
+          "surface-1": "#0f131b",
+          "surface-2": "#151a24",
+          "surface-3": "#1a202b",
+          "text-primary": "#e4e9f2",
+          "text-secondary": "#b5bece",
+          "text-muted": "#8f9aae"
+        }
+      }
+    }
+  },
+  "garden": {
+    "only": "light",
+    "roles": {
+      "accent": "#587A55",
+      "danger": "#B8453A",
+      "success": "#3F7D4B",
+      "warning": "#A87414",
+      "pro": "#8F5A78"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#F1E8D6",
+          "surface-1": "#F6EFE0",
+          "surface-2": "#FAF5E9",
+          "surface-3": "#FAF5E9",
+          "text-primary": "#2B2A22",
+          "text-secondary": "#4F4D3C",
+          "text-muted": "#66624F"
+        }
+      }
+    }
+  },
+  "glyph-balloons": {
+    "roles": {
+      "accent": "#cf3f26",
+      "danger": "#b3303f",
+      "success": "#2f7a56",
+      "warning": "#8f5a0c",
+      "pro": "#5a58b0"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#e3ebf3",
+          "surface-1": "#ecf2f7",
+          "surface-2": "#f5f8fb",
+          "text-primary": "#14233f",
+          "text-secondary": "#2c3d5c",
+          "text-muted": "#4a5a76"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#f2a73c",
+        "danger": "#ec7a86",
+        "success": "#6fc89a",
+        "warning": "#e8b04a",
+        "pro": "#a4a0f0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#080d20",
+          "surface-1": "#0e1530",
+          "surface-2": "#151d3c",
+          "surface-3": "#1b2546",
+          "text-primary": "#e8edf8",
+          "text-secondary": "#bcc6e0",
+          "text-muted": "#8f9cc0"
+        }
+      }
+    }
+  },
+  "glyph-dandelion": {
+    "roles": {
+      "accent": "#8a5d00",
+      "danger": "#b3303f",
+      "success": "#3f7f4a",
+      "warning": "#8f5a0c",
+      "pro": "#6a5aa8"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#dfe9cb",
+          "surface-1": "#e8f0d8",
+          "surface-2": "#f1f6e6",
+          "text-primary": "#1d3320",
+          "text-secondary": "#32503a",
+          "text-muted": "#4a6850"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#f5c542",
+        "danger": "#e8707c",
+        "success": "#6fc08a",
+        "warning": "#e0a43c",
+        "pro": "#a898e0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#0d0b20",
+          "surface-1": "#141130",
+          "surface-2": "#1c1840",
+          "surface-3": "#241f4c",
+          "text-primary": "#ece8ff",
+          "text-secondary": "#c4bde8",
+          "text-muted": "#a49dcc"
+        }
+      }
+    }
+  },
+  "glyph-lighthouse": {
+    "roles": {
+      "accent": "#c93d22",
+      "danger": "#b3303f",
+      "success": "#3f7f4a",
+      "warning": "#8f5a0c",
+      "pro": "#6a5aa8"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#e6dccb",
+          "surface-1": "#eee5d6",
+          "surface-2": "#f6efe3",
+          "text-primary": "#14233f",
+          "text-secondary": "#2c3d5c",
+          "text-muted": "#4a5a76"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#f2b24c",
+        "danger": "#e8707c",
+        "success": "#6fc08a",
+        "warning": "#e0a43c",
+        "pro": "#a898e0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#0a141b",
+          "surface-1": "#101c25",
+          "surface-2": "#17242f",
+          "surface-3": "#1a2833",
+          "text-primary": "#e6eef2",
+          "text-secondary": "#b9c9d2",
+          "text-muted": "#8fa2ae"
+        }
+      }
+    }
+  },
+  "glyph-train": {
+    "roles": {
+      "accent": "#c0302a",
+      "danger": "#b3303f",
+      "success": "#2f7a48",
+      "warning": "#8f5a0c",
+      "pro": "#6a5aa8"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#dce3d0",
+          "surface-1": "#e6ecdb",
+          "surface-2": "#eff3e5",
+          "text-primary": "#10231a",
+          "text-secondary": "#25382d",
+          "text-muted": "#455a4c"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#f2b24c",
+        "danger": "#e8707c",
+        "success": "#6fc08a",
+        "warning": "#e0a43c",
+        "pro": "#a898e0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#080d18",
+          "surface-1": "#0e1524",
+          "surface-2": "#151d30",
+          "surface-3": "#1a2338",
+          "text-primary": "#e4ecf6",
+          "text-secondary": "#b4c3d6",
+          "text-muted": "#8c9db4"
+        }
+      }
+    }
+  },
+  "hacker": {
+    "only": "dark",
+    "roles": {
+      "accent": "#3ee07a",
+      "danger": "#f0705f",
+      "success": "#4cc790",
+      "warning": "#e8a63a",
+      "pro": "#6bb6ff"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#101112",
+          "surface-1": "#151617",
+          "surface-2": "#1b1c1e",
+          "surface-3": "#1f2021",
+          "text-primary": "#ececec",
+          "text-secondary": "#bbbec0",
+          "text-muted": "#94989b"
+        }
+      }
+    }
+  },
+  "home": {
+    "only": "dark",
+    "roles": {
+      "accent": "#F0A640",
+      "danger": "#E0594C",
+      "success": "#6FC28B",
+      "warning": "#E8B84A",
+      "pro": "#8FA6F0"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#0A1322",
+          "surface-1": "#0F1A2D",
+          "surface-2": "#142238",
+          "surface-3": "#1A2A44",
+          "text-primary": "#E8EEF7",
+          "text-secondary": "#B8C6DA",
+          "text-muted": "#90A4C0"
+        }
+      }
+    }
+  },
+  "koster": {
+    "only": "dark",
+    "roles": {
+      "accent": "#E8943A",
+      "danger": "#D9604A",
+      "success": "#8FB37A",
+      "warning": "#E3B341",
+      "pro": "#B48EAD"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#1B1A18",
+          "surface-1": "#22201C",
+          "surface-2": "#27251F",
+          "surface-3": "#2E2B25",
+          "text-primary": "#E9E2D3",
+          "text-secondary": "#C2BAA9",
+          "text-muted": "#8A9A82"
+        }
+      }
+    }
+  },
+  "manuscript": {
+    "roles": {
+      "accent": "#2f5086",
+      "danger": "#a8312a",
+      "success": "#4a7a3a",
+      "warning": "#9a6a14",
+      "pro": "#7a4f8f"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#eadfc3",
+          "surface-1": "#f0e7cf",
+          "surface-2": "#f6efdc",
+          "text-primary": "#2a1f14",
+          "text-secondary": "#51402c",
+          "text-muted": "#66523a"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#d9ae55",
+        "danger": "#d9625a",
+        "success": "#8fb870",
+        "warning": "#d9a441",
+        "pro": "#b794cc"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#1a1410",
+          "surface-1": "#231b15",
+          "surface-2": "#2c231b",
+          "surface-3": "#352a21",
+          "text-primary": "#f1e4c8",
+          "text-secondary": "#d2c3a3",
+          "text-muted": "#ab9b7c"
+        }
+      }
+    }
+  },
+  "month-end": {
+    "only": "light",
+    "roles": {
+      "accent": "#2c5aa8",
+      "danger": "#b0332c",
+      "success": "#3f7a45",
+      "warning": "#9a6a14",
+      "pro": "#6a4f9a"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#e3eaf5",
+          "surface-1": "#ebf0f8",
+          "surface-2": "#f3f6fb",
+          "text-primary": "#14213a",
+          "text-secondary": "#33466a",
+          "text-muted": "#4a5d82"
+        }
+      }
+    }
+  },
+  "raster-code": {
+    "only": "dark",
+    "roles": {
+      "accent": "#d97757",
+      "danger": "#ee8174",
+      "success": "#9bc886",
+      "warning": "#e8bb4a",
+      "pro": "#aa9be0"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#262624",
+          "surface-1": "#2e2e2c",
+          "surface-2": "#333331",
+          "surface-3": "#383836",
+          "text-primary": "#f0eee6",
+          "text-secondary": "#c2c0b6",
+          "text-muted": "#a4a299"
+        }
+      }
+    }
+  },
+  "raster-ide": {
+    "only": "dark",
+    "roles": {
+      "accent": "#3574f0",
+      "danger": "#e55765",
+      "success": "#5fb865",
+      "warning": "#f2c55c",
+      "pro": "#a571e6"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#1e1f22",
+          "surface-1": "#2b2d30",
+          "surface-2": "#2f3134",
+          "surface-3": "#33353a",
+          "text-primary": "#dfe1e5",
+          "text-secondary": "#b4b8bf",
+          "text-muted": "#9a9ea8"
+        }
+      }
+    }
+  },
+  "raster": {
+    "only": "dark",
+    "roles": {
+      "accent": "#b9e05a",
+      "danger": "#f0735f",
+      "success": "#58c98a",
+      "warning": "#e6b04a",
+      "pro": "#6fc4c0"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#0e1210",
+          "surface-1": "#131815",
+          "surface-2": "#191f1b",
+          "surface-3": "#1d231f",
+          "text-primary": "#eaf0e6",
+          "text-secondary": "#b9c3b6",
+          "text-muted": "#93a090"
+        }
+      }
+    }
+  },
+  "recovery": {
+    "only": "dark",
+    "roles": {
+      "accent": "#4fc4a8",
+      "danger": "#e0605a",
+      "success": "#4cc790",
+      "warning": "#e0a84a",
+      "pro": "#8a9cf0"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#0b1118",
+          "surface-1": "#101821",
+          "surface-2": "#16202b",
+          "surface-3": "#1c2733",
+          "text-primary": "#e6edf3",
+          "text-secondary": "#b6c3cf",
+          "text-muted": "#8c9cab"
+        }
+      }
+    }
+  },
+  "stipple-lake": {
+    "roles": {
+      "accent": "#2747c9",
+      "danger": "#b3303f",
+      "success": "#2f7a56",
+      "warning": "#8f5a0c",
+      "pro": "#6a4fc0"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#dde2f2",
+          "surface-1": "#e7ebf7",
+          "surface-2": "#f1f3fb",
+          "text-primary": "#131c40",
+          "text-secondary": "#2b3762",
+          "text-muted": "#45517c"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#8ea4ff",
+        "danger": "#e8707c",
+        "success": "#6fc08a",
+        "warning": "#e0a43c",
+        "pro": "#b39cf0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#0a0e24",
+          "surface-1": "#101636",
+          "surface-2": "#171f48",
+          "surface-3": "#1e2856",
+          "text-primary": "#e8ecff",
+          "text-secondary": "#c1c9ec",
+          "text-muted": "#a0aad2"
+        }
+      }
+    }
+  },
+  "gouache-autumn": {
+    "roles": {
+      "accent": "#b5510f",
+      "danger": "#b3303f",
+      "success": "#3f7a3a",
+      "warning": "#8f5e0a",
+      "pro": "#7a4fb0"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#efe6d6",
+          "surface-1": "#f5eee1",
+          "surface-2": "#faf5ec",
+          "text-primary": "#241c18",
+          "text-secondary": "#4d4038",
+          "text-muted": "#6f6055"
+        }
+      }
+    },
+    "dark": {
+      "roles": {
+        "accent": "#f0943a",
+        "danger": "#e8707c",
+        "success": "#8fc08a",
+        "warning": "#e8b04c",
+        "pro": "#b79cf0"
+      },
+      "gray": {
+        "anchors": {
+          "surface-0": "#12141d",
+          "surface-1": "#191c28",
+          "surface-2": "#212534",
+          "surface-3": "#2a2f41",
+          "text-primary": "#efe6d8",
+          "text-secondary": "#cbbfb0",
+          "text-muted": "#a29789"
+        }
+      }
+    }
+  },
+  "terracotta": {
+    "roles": {
+      "accent": "#d77757",
+      "danger": "#b3303f",
+      "success": "#4f7f3a",
+      "warning": "#a87118",
+      "pro": "#8054a0"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#e6aa80",
+          "surface-1": "#eebb94",
+          "surface-2": "#f4cba9",
+          "text-primary": "#241008",
+          "text-secondary": "#44200f",
+          "text-muted": "#582f1b"
+        }
+      }
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#231d1b",
+          "surface-1": "#2c2522",
+          "surface-2": "#352d29",
+          "surface-3": "#3f3531",
+          "text-primary": "#f4e6da",
+          "text-secondary": "#d3beae",
+          "text-muted": "#b09a8a"
+        }
+      }
+    }
+  },
+  "training": {
+    "only": "dark",
+    "roles": {
+      "accent": "#ff6b3d",
+      "danger": "#e5484d",
+      "success": "#46a758",
+      "warning": "#e0a526",
+      "pro": "#8f7bd6"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#121417",
+          "surface-1": "#1a1d21",
+          "surface-2": "#22262b",
+          "surface-3": "#2b3036",
+          "text-primary": "#eceae6",
+          "text-secondary": "#c4c2bd",
+          "text-muted": "#9b9d9f"
+        }
+      }
+    }
+  },
+  "ember-core": {
+    "only": "dark",
+    "roles": {
+      "accent": "#E8743B",
+      "danger": "#D8302F",
+      "success": "#B8FF3C",
+      "warning": "#F2B33D",
+      "pro": "#D690CB"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#14110F",
+          "surface-1": "#1A1613",
+          "surface-2": "#201B18",
+          "surface-3": "#221D19",
+          "text-primary": "#EDE6DD",
+          "text-secondary": "#C4B8AB",
+          "text-muted": "#A69A8E"
+        }
+      },
+      "git": {
+        "added": "#B8FF3C",
+        "removed": "#FF6466",
+        "modified": "#F2B33D",
+        "merged": "#D690CB",
+        "closed": "#FF6466",
+        "conflicting": "#F08A55",
+        "draft": "#B3A79B"
+      }
+    }
+  },
+  "ivory": {
+    "only": "light",
+    "roles": {
+      "accent": "#C2552B",
+      "danger": "#B02824",
+      "success": "#3F7A12",
+      "warning": "#9A6408",
+      "pro": "#8A4F9E"
+    },
+    "light": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#F0EEE6",
+          "surface-1": "#F5F3EC",
+          "surface-2": "#FAF9F5",
+          "text-primary": "#141413",
+          "text-secondary": "#3D3D3A",
+          "text-muted": "#55544F"
+        }
+      },
+      "git": {
+        "added": "#3F7A12",
+        "removed": "#A82420",
+        "modified": "#9A6408",
+        "merged": "#8A4F9E",
+        "closed": "#C4302B",
+        "conflicting": "#C2552B",
+        "draft": "#5E5D59"
+      }
+    }
+  }
 }
