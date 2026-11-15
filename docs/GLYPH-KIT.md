@@ -53,8 +53,10 @@ Build the whole body first, then call `frame()` last (it consumes and resets the
 - A moving object's hit rect and burst must sit inside a `move()` with the same params as the object.
 
 ## Root
-- `frame(body,{css?,dark?,phone?,defs?}) -> string`: root `<svg>` (1600x1000, slice), shared style: monospace stack,
-  `.L/.D` scheme switch, `svg *{pointer-events:none}` with `.hit` re-enabled, reduced motion, `@media (max-aspect-ratio:1/1){phone}`.
+- `frame(body,{css?,dark?,phone?,defs?,par?}) -> string`: root `<svg>` (1600x1000, `par` or `xMidYMid slice`), shared style:
+  monospace stack, `.L/.D` scheme switch, `svg *{pointer-events:none}` with `.hit` re-enabled, reduced motion, and
+  `@media (max-aspect-ratio:1/1){phone}` only when `phone` is given. The desktop app refuses that rule and then draws the
+  whole scene with no motion, so a new scene leaves `phone` out and keeps its subject in view with `par` instead.
   `css` = extra rules, `dark` = extra rules inside `prefers-color-scheme:dark`, `defs` = extra `<defs>` content (ids must
   be yours; the kit's are `gg*`, `hg*`, `bf*`, `bt*`). For phone, wrap each subject in `<g class="pl-name">` and move it
   from `phone`: the phone sees only x ~569..1031, scale ~.93, cells keep their size.

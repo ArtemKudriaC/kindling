@@ -334,14 +334,14 @@ export function burst(id: string, o: { x: number; y: number; tiles: [string, str
 }
 
 // ---- root ----
-/** Root <svg> with the shared style block. phone = CSS for @media (max-aspect-ratio:1/1); css/dark = extra rules. */
-export function frame(body: string, o: { css?: string; dark?: string; phone?: string; defs?: string } = {}): string {
-  const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
+/** Root <svg> with the shared style block. phone = CSS for @media (max-aspect-ratio:1/1), written only when given: the
+ *  desktop app refuses that rule and then draws the scene with no motion. par = preserveAspectRatio. css/dark = extra rules. */
+export function frame(body: string, o: { css?: string; dark?: string; phone?: string; defs?: string; par?: string } = {}): string {
+  const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="${o.par ?? 'xMidYMid slice'}" width="100%" height="100%">
 <defs>${o.defs ?? ''}${defs.join('')}</defs>
 <style>.tb{fill:currentColor;stroke:currentColor}text{font-family:ui-monospace,Menlo,Consolas,monospace;text-anchor:middle}.D{display:none}.L{display:block}svg *{pointer-events:none}svg .hit,svg .hit *{pointer-events:all}.hv{opacity:0;transition:opacity .3s;mix-blend-mode:screen}.hit:hover+.hv{opacity:.5}${css.join('')}${o.css ?? ''}
 @media (prefers-color-scheme:dark){.L{display:none}.D{display:block}${cssDark.join('')}${o.dark ?? ''}}
-@media (max-aspect-ratio:1/1){${o.phone ?? ''}}
-@media (prefers-reduced-motion:reduce){*{animation:none !important}}</style>
+${o.phone ? `@media (max-aspect-ratio:1/1){${o.phone}}\n` : ''}@media (prefers-reduced-motion:reduce){*{animation:none !important}}</style>
 ${body}
 </svg>`
   css = []; cssDark = []; defs = []; uid = 0; seen = new Set()

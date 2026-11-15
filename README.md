@@ -1,6 +1,6 @@
 # kindling
 
-Living backdrops for the Claude Code desktop app. One mod, `looks`, with twenty themes that move while Claude works and rest while it waits.
+Living backdrops for the Claude Code desktop app. One mod, `looks`, with twenty-two themes that move while Claude works and rest while it waits.
 
 ![Маяк at night](previews/glyph-lighthouse-dark.jpg)
 
@@ -61,6 +61,15 @@ Every object is rasterized into small tiles, one monospace character each, shade
 | **Одуванчики** `glyph-dandelion`: a meadow seen from low down | at dusk the heads are seed clocks and the wind carries seeds |
 | <img src="previews/glyph-train-light.jpg" width="420"> | <img src="previews/glyph-train-dark.jpg" width="420"> |
 | **Поезд** `glyph-train`: a small railway in hill country | signal green, the steam train runs through the tunnel |
+
+## Spark: a backdrop about AI
+
+A spark of lettered tiles in the right margin, a small creature beside the input, a faint grid and a few code glyphs at the edges, drawn with the same tile kit as Glyph. Everything busy sits clear of the chat column. It comes as two separate looks that set the app's scheme themselves: Тлеющее ядро is always dark, Слоновая кость always light. While Claude works, light runs out along the spark's rays and the creature steps in place; at rest the creature only blinks.
+
+| Light | Dark |
+|---|---|
+| <img src="previews/ivory.jpg" width="420"> | <img src="previews/ember-core.jpg" width="420"> |
+| **Слоновая кость** `ivory`: terracotta and lime on ivory | **Тлеющее ядро** `ember-core`: red, orange and acid green on warm black |
 
 ## Stipple: a painting in dabs
 

@@ -91,7 +91,7 @@ test('every look draws an svg on desktop and nothing in the terminal', async ($,
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
-  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn']) {
+  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn', 'ember-core', 'ivory']) {
     const ui = await $.ui.mount(backdrop(id))
     const svg = (await ui.find({ type: 'Svg' }))?.props.source
     expect(String(svg).startsWith('<svg')).toBe(true)
@@ -390,3 +390,131 @@ test('a copy that has a choice says nothing when the app shows it', async ($, on
   expect(seen.toasts.length).toBe(0)
   expect(seen.status.length).toBe(0)
 })
+
+test('/look ember-core wears Тлеющее ядро in the dark and /look ivory wears Слоновая кость in the light: a spark of lettered tiles right of the chat, a small creature beside the input, a quiet middle, the app plays it, motion off leaves the whole picture, no script', async ($, on) => {
+  const sets: any[] = []
+  engine(on, sets)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+
+  for (const [id, title, scheme] of [['ember-core', /Тлеющее ядро/, 'dark'], ['ivory', /Слоновая кость/, 'light']] as const) {
+    expect((await $.command.run({ command: 'look', args: id })).text).toMatch(title)
+    expect(sets.at(-1)?.backdrop?.scene).toBe(id)
+    expect(sets.at(-1)?.overrideColorScheme).toBe(scheme)
+  }
+  const listed = (await $.command.run({ command: 'look', args: 'nope' })).text
+  expect(listed).toMatch(/ember-core/)
+  expect(listed).toMatch(/ivory/)
+
+  const draw = async (id: string) => {
+    const ui = await $.ui.mount(backdrop(id))
+    const svg = String((await ui.find({ type: 'Svg' }))?.props.source)
+    await ui.unmount()
+    return svg
+  }
+  const resting = { ember: await draw('ember-core'), ivory: await draw('ivory') }
+  await $.turn.start({ turnId: 't1' })
+  const working = { ember: await draw('ember-core'), ivory: await draw('ivory') }
+
+  const nums = (v: string) => v.trim().split(/\s+/).map(Number)
+  // text elements of one family of classes, each with its x and y lists and its own opacity (1 when it has none)
+  const texts = (svg: string, cls: RegExp) =>
+    [...svg.matchAll(/<text([^>]*)>/g)].map(m => m[1] ?? '').filter(a => cls.test(/class="([^"]*)"/.exec(a)?.[1] ?? ''))
+      .map(a => ({ x: nums(/\sx="([^"]*)"/.exec(a)?.[1] ?? ''), y: nums(/\sy="([^"]*)"/.exec(a)?.[1] ?? ''), op: parseFloat(/\sopacity="([^"]*)"/.exec(a)?.[1] ?? '1') }))
+  // every corner a tile path reaches (tile paths are M, m, h, v and z only); m moves from the start of the last tile
+  const corners = (d: string) => {
+    const out: [number, number][] = []
+    let sx = 0, sy = 0, x = 0, y = 0
+    for (const [, c, a = '', b = ''] of d.matchAll(/([MmhvZz])\s*(-?[\d.]+)?\s*(-?[\d.]+)?/g)) {
+      if (c === 'M') { sx = x = +a; sy = y = +b } else if (c === 'm') { sx = x = sx + +a; sy = y = sy + +b } else if (c === 'h') x += +a
+      else if (c === 'v') y += +a
+      else { x = sx; y = sy }
+      out.push([x, y])
+    }
+    return out
+  }
+
+  for (const svg of [...Object.values(resting), ...Object.values(working)]) {
+    expect(svg.startsWith('<svg')).toBe(true)
+    expect(svg.length < 120000).toBe(true)
+    expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
+    // a narrow window keeps the right side of the picture, where the spark stands
+    expect(svg).toMatch(/^<svg [^>]*preserveAspectRatio="xMaxYMid slice"/)
+
+    // the spark: lettered tiles right of the chat column (it ends at x 1282 with the sidebar open, kindling.md), up high
+    const spark = texts(svg, /^s[rc]t\d$/)
+    const sx = spark.flatMap(t => t.x), sy = spark.flatMap(t => t.y)
+    expect(sx.length >= 60).toBe(true)
+    expect(sx.every(x => x >= 1290 && x <= 1600) && sy.every(y => y >= 40 && y <= 640)).toBe(true)
+
+    // the creature stands in the strip both layouts leave clear (right of the open sidebar at 260, left of the chat at
+    // 430 with the sidebar closed), low, where the input is
+    const pet = /<g class="pet" transform="translate\(([\d.]+) ([\d.]+)\)">/.exec(svg)
+    expect(pet).not.toBe(null)
+    const [px, py] = [parseFloat(pet?.[1] ?? 'NaN'), parseFloat(pet?.[2] ?? 'NaN')]
+    const body = svg.slice(svg.indexOf('<g class="pet"'))
+    const pts = [...body.matchAll(/<path class="tb p[bfe]\d" [^>]*d="([^"]*)"/g)].flatMap(m => corners(m[1] ?? ''))
+    expect(pts.length >= 40).toBe(true)
+    expect(pts.every(([x, y]) => px + x >= 262 && px + x <= 430 && py + y >= 700 && py + y <= 990)).toBe(true)
+
+    // the sparks around it and in the margins keep out of the chat column too
+    const sparks = texts(svg, /^sp\b/)
+    expect(sparks.length >= 3).toBe(true)
+    expect(sparks.every(t => t.x.every(x => x < 430 || x > 1282))).toBe(true)
+    // nothing behind the chat but the faint grid and a few faint glyphs
+    expect(texts(svg, /.*/).filter(t => t.x.some(x => x > 430 && x < 1282)).every(t => t.op <= 0.08)).toBe(true)
+
+    // the app plays it: nothing off its lists (no grain filter, no aspect-ratio media rule, no CSS path()), judged by
+    // the port of the app's own check above
+    expect(playsInApp(svg)).toBe(true)
+    const css = [...svg.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m => m[1] ?? '').join('')
+
+    // motion off (the app's own rule may strip it): every set of moving frames shows its first, whole frame
+    const keys = new Set([...svg.matchAll(/class="q(\w+)_\d+"/g)].map(m => m[1]))
+    for (const k of keys) expect(new RegExp(`\\.q${k}_0\\{opacity:1;`).test(css)).toBe(true)
+  }
+
+  // at work more of it moves than at rest, and something lives at rest too; light runs out along the spark's rays only
+  // while Claude works
+  const moving = (svg: string) => (svg.match(/class="q\w+_\d+"/g) ?? []).length
+  const sparkMoving = (svg: string) => moving(svg.slice(svg.indexOf('<g class="spark">'), svg.indexOf('<g class="pet"')))
+  for (const k of ['ember', 'ivory'] as const) {
+    expect(moving(resting[k]) > 0).toBe(true)
+    expect(moving(working[k]) > moving(resting[k])).toBe(true)
+    expect(sparkMoving(working[k]) > 1).toBe(true)
+    expect(sparkMoving(resting[k])).toBe(0)
+  }
+  // Тлеющее ядро is warm black with the owner's red, orange and acid green; Слоновая кость is ivory with terracotta and
+  // lime. Judged on what is painted: the colours of the classes the tile paths use, and the fill of the lime marks
+  const rgb = (h: string) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16))
+  const hsv = (h: string) => {
+    const [r = 0, g = 0, b = 0] = rgb(h), mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn || 1
+    const hue = mx === r ? 60 * (g - b) / d : mx === g ? 60 * (2 + (b - r) / d) : 60 * (4 + (r - g) / d)
+    return [(hue + 360) % 360, mx ? (mx - mn) / mx : 0, mx]
+  }
+  // painted colours of the tile paths whose class matches cls, looked up in the style block
+  const painted = (svg: string, cls: RegExp) => {
+    const css = [...svg.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m => m[1] ?? '').join('')
+    return [...new Set([...svg.matchAll(/<path class="tb (\w+)"/g)].map(m => m[1] ?? ''))].filter(c => cls.test(c))
+      .map(c => new RegExp(`\\.${c}\\{color:(#[0-9a-fA-F]{6})\\}`).exec(css)?.[1] ?? '#000000').map(hsv)
+  }
+  // the ground's vertical gradient: every stop of the sky behind the scene
+  const sky = (svg: string) => [...svg.matchAll(/<linearGradient id="gg[LD]\d+"[^>]*>([\s\S]*?)<\/linearGradient>/g)]
+    .flatMap(m => [...(m[1] ?? '').matchAll(/stop-color="(#[0-9a-fA-F]{6})"/g)].map(c => hsv(c[1] ?? '#000000')))
+  const warm = ([h]: number[]) => (h ?? 0) <= 40 || (h ?? 0) >= 345
+  for (const svg of [...Object.values(resting), ...Object.values(working)]) {
+    expect(painted(svg, /^s[rc]\d$/).length > 0 && painted(svg, /./).every(warm)).toBe(true) // no cold tile anywhere
+  }
+  for (const svg of [resting.ember, working.ember]) {
+    expect(sky(svg).length >= 3 && sky(svg).every(([h = 0, , v = 0]) => h <= 40 && v <= 40)).toBe(true) // warm black
+    expect(painted(svg, /^s[rc]\d$/).some(([h = 0, s = 0]) => h <= 15 && s >= 0.65)).toBe(true) // red in the spark
+    expect(painted(svg, /^s[rc]\d$/).some(([h = 0, s = 0, v = 0]) => h >= 18 && h <= 40 && s >= 0.5 && v >= 200)).toBe(true) // and orange
+    expect(svg).toMatch(/\.sp\{fill:#B8FF3C\}/) // acid green marks
+  }
+  for (const svg of [resting.ivory, working.ivory]) {
+    expect(sky(svg).length >= 3 && sky(svg).every(([h = 0, , v = 0]) => h <= 60 && v >= 220)).toBe(true) // ivory
+    expect(painted(svg, /^s[rc]\d$/).some(([h = 0, s = 0, v = 0]) => h <= 20 && s >= 0.6 && v >= 180)).toBe(true) // terracotta in the spark
+    const [r = 0, g = 0, b = 0] = rgb(/\.sp\{fill:(#[0-9a-fA-F]{6})\}/.exec(svg)?.[1] ?? '#000000')
+    expect(g >= 150 && g > r + 40 && g > b + 80).toBe(true) // bright lime marks
+  }
+})
+

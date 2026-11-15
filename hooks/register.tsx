@@ -10,6 +10,7 @@ import { gardenScene } from './scenes/garden'
 import { glyphBalloonsScene } from './scenes/glyph-balloons'
 import { glyphDandelionScene } from './scenes/glyph-dandelion'
 import { glyphLighthouseScene } from './scenes/glyph-lighthouse'
+import { glyphSparkScene } from './scenes/glyph-spark'
 import { glyphTrainScene } from './scenes/glyph-train'
 import { gouacheAutumnScene } from './scenes/gouache-autumn'
 import { hackerScene } from './scenes/hacker'
@@ -176,6 +177,20 @@ const LOOKS = {
     glass: { blur: 14, opacity: 0.55 },
     live: true,
     scene: a => gouacheAutumnScene(a === 'idle' ? 'idle' : 'busy'),
+  },
+  'ember-core': {
+    title: 'Тлеющее ядро',
+    blurb: 'искра из плиток-символов на тёплом чёрном с тонкой сеткой и редкими знаками кода, у поля ввода сидит маленький зверёк; пока Claude работает, по лучам искры бежит свет',
+    glass: { blur: 14, tint: '#14110F', opacity: 0.6 },
+    live: true,
+    scene: a => glyphSparkScene(a === 'idle' ? 'idle' : 'busy', 'ember'),
+  },
+  ivory: {
+    title: 'Слоновая кость',
+    blurb: 'та же искра из плиток-символов на слоновой кости; пока Claude работает, по лучам бежит свет, а зверёк у поля ввода шагает на месте',
+    glass: { blur: 16, opacity: 0.5 },
+    live: true,
+    scene: a => glyphSparkScene(a === 'idle' ? 'idle' : 'busy', 'ivory'),
   },
 } satisfies Record<string, Look>
 
