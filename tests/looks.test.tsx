@@ -1,5 +1,5 @@
 // @ts-nocheck ponytail: the test harness fakes partial engine inputs; checked by running, not by tsc
-import { expect, test } from 'claude-code/testing'
+import { expect, mock, test } from 'claude-code/testing'
 
 import { PALETTES } from '../hooks/palettes'
 import { faultOf } from '../hooks/register'
@@ -20,6 +20,7 @@ const engine = (on: any, sets: Set[], store: Record<string, unknown> = {}, drawn
   on('session.start', (_: unknown, e: any) => ({ cwd: e.cwd }))
   on('turn.start', () => ({ turnId: 't1' }))
   on('turn.complete', () => ({ text: '' }))
+  on('session.measure', (_: unknown, e: any) => ({ changed: e.changed }))
 }
 
 const backdrop = (scene: string) => ({ plugin: 'kindling', component: 'Backdrop', requestId: 'theme', surface: 'desktop', props: { plugin: 'kindling', scene, glass: {} } }) as const
@@ -345,6 +346,171 @@ test('/look ukiyo-e wears Укиё-э: a woodblock print of a bay, a gate in the
     expect(svg.length < 120000).toBe(true)
     expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
   }
+})
+
+// the limits cartouche: each window's label read down the column, then its figure set across the column
+const labels = (svg: string) => [...svg.matchAll(/<text class="tl"[^>]*>(.*?)<\/text>/g)].map(m => m[1].replaceAll(/<[^>]*>/g, ''))
+const figures = (svg: string) => [...svg.matchAll(/<text class="tf( hot)?"[^>]*>(\d+)<\/text>/g)].map(m => [m[2], m[1] === ' hot'])
+const reset = (svg: string) => svg.match(/<circle class="seal"[^>]*\/><text class="sk"[^>]*>([^<]*)<\/text>/)?.[1]
+const seal = (svg: string) => svg.match(/<rect class="seal"[^>]*\/><text class="sk"[^>]*>([^<]*)<\/text>/)?.[1]
+const hhmm = (iso: string) => {
+  const d = new Date(iso)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+// A #rrggbb colour as [r, g, b], and the WCAG contrast ratio of two of them.
+const rgb = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
+const contrast = (a: number[], b: number[]) => {
+  const lum = (c: number[]) => {
+    const [r = 0, g = 0, bl = 0] = c.map(v => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl
+  }
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x)
+  return (hi + 0.05) / (lo + 0.05)
+}
+// The fill a class list is painted with: the last rule in the style that sets fill on one of its classes.
+const painted = (css: string, classes: string[]) => {
+  let fill: string | undefined
+  for (const [, sel, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const f = body.match(/(?:^|;)fill:([^;]+)/)?.[1]
+    if (f !== undefined && sel.split(',').some(s => classes.includes(s.trim().replace(/^\./, '')))) fill = f
+  }
+  return fill
+}
+
+test('Укиё-э prints Claude\'s limits in a cartouche beside the title, the five-hour reset in a round seal and the last turn\'s cache in the red seal; a passed reset reads 0, also with no new reading; subagents and other looks leave the figures alone', async ($, on) => {
+  engine(on, [])
+  const clock = mock.clock(on, { now: Date.now() })
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  await $.command.run({ command: 'look', args: 'ukiyo-e' })
+
+  const draw = async (scene = 'ukiyo-e') => {
+    const ui = await $.ui.mount(backdrop(scene))
+    const svg = String((await ui.find({ type: 'Svg' }))?.props.source)
+    await ui.unmount()
+    return svg
+  }
+  const usage = (input: number, read: number, written: number) => ({ input_tokens: input, output_tokens: 40, cache_read_input_tokens: read, cache_creation_input_tokens: written, model: 'claude-opus-5-5' })
+
+  // before any reading the print is as in 0.7.0: no limits cartouche, no reset seal, the seal holds its character
+  const resting0 = await draw()
+  await $.turn.start({ turnId: 't0' })
+  const working0 = await draw()
+  for (const svg of [resting0, working0]) {
+    expect(labels(svg)).toEqual([])
+    expect(figures(svg)).toEqual([])
+    expect(reset(svg)).toBe(undefined)
+    expect(seal(svg)).toBe('絵')
+  }
+
+  const koster = await draw('koster')
+  const fiveResets = new Date(Date.now() + 60_000).toISOString()
+  await $.session.measure({
+    context: { window: 200000 },
+    rateLimits: [
+      { kind: 'five_hour', percentUsed: 23.4, resetsAt: fiveResets },
+      { kind: 'seven_day', percentUsed: 86, resetsAt: new Date(Date.now() + 5 * 864e5).toISOString() },
+      { kind: 'spend_limit', percentUsed: 40 },
+    ],
+    changed: ['rateLimits'],
+  })
+  // a reading changes no other look
+  expect(await draw('koster')).toBe(koster)
+  await $.turn.complete({ turnId: 't0', answer: '', reason: 'answer', usage: usage(100, 9200, 700) })
+  // a subagent's turn, and a turn that reported nothing, change no figure
+  await $.turn.complete({ turnId: 'a0', answer: '', reason: 'answer', agentId: 'a1', usage: usage(5000, 0, 5000) })
+
+  const resting = await draw()
+  await $.turn.start({ turnId: 't1' })
+  const working = await draw()
+  await $.turn.complete({ turnId: 't1', answer: '', reason: 'aborted' })
+  for (const svg of [resting, working]) {
+    expect(labels(svg)).toEqual(['五時間', '七日'])
+    expect(figures(svg)).toEqual([['23', false], ['86', true]])
+    expect(reset(svg)).toBe(hhmm(fiveResets))
+    expect(seal(svg)).toBe('92')
+    // a figure at 80 or more is painted red and one under it is not, each readable on the cartouche (4.5:1), in each scheme
+    const css = svg.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+    const [day, night = ''] = css.split('@media (prefers-color-scheme:dark)')
+    expect(night.length > 0).toBe(true)
+    for (const scheme of [day, day + night]) {
+      const [hot, plain, paper] = [painted(scheme, ['tf', 'hot']), painted(scheme, ['tf']), painted(scheme, ['ct'])].map(c => rgb(c ?? ''))
+      expect(hot[0] > 2 * hot[1] && hot[0] > 2 * hot[2]).toBe(true)
+      expect(plain[0] > 2 * plain[1]).toBe(false)
+      expect(contrast(hot, paper) >= 4.5 && contrast(plain, paper) >= 4.5).toBe(true)
+    }
+    // the cartouches, the text inside them and the reset seal stay in the strip both layouts leave clear (x 260 to 430)
+    const boxes = [...svg.matchAll(/<rect class="ct" x="(\d+)" y="\d+" width="(\d+)"/g)].map(m => [Number(m[1]), Number(m[1]) + Number(m[2])])
+    expect(boxes.length).toBe(2)
+    expect(boxes.every(([l, r]) => l >= 260 && r <= 430)).toBe(true)
+    const strip = boxes.reduce((a, b) => (b[0] > a[0] ? b : a))
+    const xs = [...svg.matchAll(/<text class="t[lf][^"]*"[^>]*>(.*?)<\/text>/g)].flatMap(m => [...m[0].matchAll(/\sx="(\d+)"/g)].map(x => Number(x[1])))
+    expect(xs.length >= 7 && xs.every(x => x > strip[0] && x < strip[1])).toBe(true)
+    const round = svg.match(/<g transform="translate\((\d+) \d+\)"><circle class="seal" r="(\d+)"/)
+    expect(Number(round?.[1]) - Number(round?.[2]) >= 260 && Number(round?.[1]) + Number(round?.[2]) <= 430).toBe(true)
+    expect(playsInApp(svg)).toBe(true)
+    expect(svg.length < 120000).toBe(true)
+    expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
+  }
+
+  // the five-hour window resets while the chat is idle: the timer set for it draws 0 and takes the reset seal away
+  await clock.advance(61_000)
+  const spent = await draw()
+  expect(figures(spent)).toEqual([['0', false], ['86', true]])
+  expect(reset(spent)).toBe(undefined)
+  expect(seal(spent)).toBe('92')
+
+  // a reading whose reset has already passed draws 0 with no reset seal; a window with no reset time keeps its figure
+  await $.session.measure({
+    context: { window: 200000 },
+    rateLimits: [
+      { kind: 'five_hour', percentUsed: 64, resetsAt: new Date(Date.now() - 60_000).toISOString() },
+      { kind: 'seven_day', percentUsed: 12 },
+    ],
+    changed: ['rateLimits'],
+  })
+  const passed = await draw()
+  expect(figures(passed)).toEqual([['0', false], ['12', false]])
+  expect(reset(passed)).toBe(undefined)
+
+  // a session with no limits (an API key) takes the cartouche away; the cache figure stays
+  await $.session.measure({ context: { window: 200000 }, rateLimits: [], changed: ['rateLimits'] })
+  const none = await draw()
+  expect(labels(none)).toEqual([])
+  expect(reset(none)).toBe(undefined)
+  expect(seal(none)).toBe('92')
+})
+
+test('after a reload Укиё-э still draws a passed five-hour reset as 0: the reading survives the reload, its timer does not, and start sets it again', async ($, on) => {
+  engine(on, [])
+  const clock = mock.clock(on, { now: Date.now() })
+  // the reading the module stored before the reload; the reload dropped the timer it had set for the reset
+  const resetsAt = new Date(Date.now() + 60_000).toISOString()
+  let written = false
+  on('state.set', (_: unknown, e: any, next: any) => {
+    if (e.key === 'meter') written = true
+    return next(e)
+  })
+  on('state.get', async (_: unknown, e: any, next: any) => {
+    const r = await next(e)
+    return e.key === 'meter' && !written ? { value: { value: { fiveHour: { used: 40, resetsAt }, sevenDay: { used: 10 } }, version: r.value.version } } : r
+  })
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  await $.command.run({ command: 'look', args: 'ukiyo-e' })
+  const draw = async () => {
+    const ui = await $.ui.mount(backdrop('ukiyo-e'))
+    const svg = String((await ui.find({ type: 'Svg' }))?.props.source)
+    await ui.unmount()
+    return svg
+  }
+
+  const before = await draw()
+  expect(figures(before)).toEqual([['40', false], ['10', false]])
+  expect(reset(before)).toBe(hhmm(resetsAt))
+  // no reading comes while the chat is idle
+  await clock.advance(61_000)
+  const after = await draw()
+  expect(figures(after)).toEqual([['0', false], ['10', false]])
+  expect(reset(after)).toBe(undefined)
 })
 
 test('an open chat follows the look another chat stored, and ignores one it does not have', async ($, on) => {

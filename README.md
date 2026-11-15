@@ -104,6 +104,8 @@ Ink on old paper, in the manner of shogun-era painting. A castle keep stands on 
 
 Flat colour inside black key-block lines that swell and taper like a cut line, colour graded at the top of the sky, at the horizon and along the lower edge of the mist, wood grain and paper fibres: a woodblock print of the Edo period, drawn from scratch. On the left a vermilion gate stands in the water and the sun sets between its pillars, a fisherman sits in his skiff below it, and a cartouche in the corner holds the print's title and a seal. On the right a snow mountain rises out of a band of mist, an old pine leans out from a rock beside a stone lantern, a boat lies off the headland and a wave breaks below the rock. It follows the app's scheme: an evening print by day, or a night print with the moon, the lit lantern and lamps on the boats.
 
+The print also carries Claude's own figures, the way an Edo print carries text. A second cartouche beside the title holds the usage limits: 五時間 (five hours) and 七日 (seven days), each with the percent of that window used, in vermilion from 80. The round seal (時) under it is the time the five-hour window resets, and the red seal (蔵) under the title is the share of the last turn's input that the prompt cache served. Until Claude Code has a reading, and on an API key, which has no such limits, the print shows only its title and seal.
+
 | Day | Night |
 |---|---|
 | ![](previews/ukiyo-e-light.jpg) | ![](previews/ukiyo-e-dark.jpg) |
@@ -145,14 +147,15 @@ Calls it makes, all Claude Code's own:
 
 - `theme.set` puts the chosen look on the window: its colours and its backdrop scene.
 - `store.get` and `store.set` remember which look you chose and whether the welcome note was shown. The store stays on this machine.
-- `command.register` adds `/look`. `ui.resolve` hands the scene to the backdrop. `ui.status` and `ui.toast` show a short line: why a look could not be drawn, or once which look you are wearing. `clock.every` checks every few seconds whether another chat picked a new look; `clock.after` ends Костёр's burst.
+- `command.register` adds `/look`. `ui.resolve` hands the scene to the backdrop. `ui.status` and `ui.toast` show a short line: why a look could not be drawn, or once which look you are wearing. `clock.every` checks every few seconds whether another chat picked a new look; `clock.after` ends Костёр's burst, and redraws Укиё-э's limits when a window resets.
 
 Hooks:
 
 - `session.start` registers `/look` and puts on the saved look.
 - `command.run` answers `/look` only and lets every other command through.
 - `session.attach` shows the welcome note once, in the desktop app, while no look has been chosen yet.
-- `turn.start` and `turn.complete` switch a live scene between working and waiting. They read only that a turn started or ended; `turn.start` also checks the store for a look chosen in another chat.
+- `turn.start` and `turn.complete` switch a live scene between working and waiting. They read that a turn started or ended; `turn.start` also checks the store for a look chosen in another chat, and `turn.complete` reads the turn's token counts for the share of its input the prompt cache served, which Укиё-э prints.
+- `session.measure` reads Claude Code's five-hour and seven-day limit windows, the percent used and when each resets, for Укиё-э's cartouche. The figures stay in the session and are not sent.
 - `session.append` reads Claude's replies for the word "merged", which makes Костёр flare. The text is not kept or sent.
 - `ui.render` on `Backdrop` draws the scene; it leaves other plugins' backdrops alone.
 

@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register, ThemeBackdropGlass, ThemeResult, ThemeSetArgs } from 'claude-code'
+import type { EngineInterface, Register, SessionRateLimit, ThemeBackdropGlass, ThemeResult, ThemeSetArgs } from 'claude-code'
 
-import type { Activity, LookState } from '../types'
+import type { Activity, LookState, Meter } from '../types'
 import { makeColors } from './make-colors.js'
 import { PALETTES } from './palettes'
 import { darkSideScene } from './scenes/dark-side'
@@ -40,7 +40,9 @@ type Look = {
   glass: ThemeBackdropGlass
   /** Redraws when Claude starts or stops working. */
   live?: boolean
-  scene: (activity: Activity, state: LookState, now: Date) => string
+  /** Prints Claude Code's limit windows and cache share; redraws when a figure it shows changes. */
+  meter?: boolean
+  scene: (activity: Activity, state: LookState, now: Date, meter: Meter) => string
 }
 
 const dayOfYear = (d: Date) => Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 0)) / 864e5)
@@ -203,10 +205,11 @@ const LOOKS = {
   },
   'ukiyo-e': {
     title: 'Укиё-э',
-    blurb: 'японская гравюра на дереве: красные ворота в заливе, сквозь них садится солнце, под ними рыбак в лодке; справа снежная гора над полосой тумана, сосна и каменный фонарь на скале, под ней разбивается волна; ночью луна, фонарь и огни лодок; пока Claude работает, поднимается ветер: туман идёт через ворота, рыбак бросает сеть, на лодке ставят парус, гребни и брызги',
+    blurb: 'японская гравюра на дереве: красные ворота в заливе, сквозь них садится солнце, под ними рыбак в лодке; справа снежная гора над полосой тумана, сосна и каменный фонарь на скале, под ней разбивается волна; ночью луна, фонарь и огни лодок; пока Claude работает, поднимается ветер: туман идёт через ворота, рыбак бросает сеть, на лодке ставят парус, гребни и брызги; в картуше рядом с названием лимиты Claude: сколько процентов пятичасового (五時間) и недельного (七日) окна израсходовано, от 80 цифра красная; в круглой печати время, когда сбросится пятичасовое окно; в красной печати доля последнего хода, взятая из кэша',
     glass: { blur: 16, opacity: 0.62 },
     live: true,
-    scene: a => ukiyoeScene(a === 'idle' ? 'idle' : 'busy'),
+    meter: true,
+    scene: (a, _s, _now, m) => ukiyoeScene(a === 'idle' ? 'idle' : 'busy', m),
   },
 } satisfies Record<string, Look>
 
@@ -216,6 +219,7 @@ const lookOf = (id: string): Look => (isLook(id) ? LOOKS[id] : LOOKS[DEFAULT])
 
 const activity = atom({ plugin: 'kindling', key: 'activity' } as const, 'idle' as Activity)
 const state = atom({ plugin: 'kindling', key: 'state' } as const, { look: DEFAULT } as LookState)
+const meter = atom({ plugin: 'kindling', key: 'meter' } as const, {} as Meter)
 
 const colorsOf = (id: string) => {
   const { theme, problems } = makeColors({ label: lookOf(id).title, ...PALETTES[id] })
@@ -254,6 +258,52 @@ async function setActivity($: EngineInterface, a: Activity): Promise<void> {
   }
 }
 
+const WINDOWS = { fiveHour: 'five_hour', sevenDay: 'seven_day' } as const
+
+/** A window past its reset reads 0 with no reset time: the next request opens a new one. */
+const settle = (m: Meter, now: number): Meter => {
+  const out = { ...m }
+  for (const key of Object.keys(WINDOWS) as (keyof typeof WINDOWS)[]) {
+    const at = m[key]?.resetsAt
+    if (at !== undefined && Date.parse(at) <= now) {
+      out[key] = { used: 0 }
+    }
+  }
+  return out
+}
+
+// Each write redraws a look that prints the meter, so only a change is written; `update` applies `fn` to the value as it stands.
+async function setMeter($: EngineInterface, fn: (m: Meter) => Meter): Promise<void> {
+  const m = await read($, meter)
+  if (JSON.stringify(fn(m)) !== JSON.stringify(m)) {
+    await update($, meter, fn)
+  }
+}
+
+// No measurement comes while the chat is idle, so a timer at each reset `m` holds and `was` did not draws that window
+// spent. A reload keeps the meter and drops the timers, so session.start arms the stored resets again.
+function arm($: EngineInterface, m: Meter, was: Meter = {}): void {
+  for (const key of Object.keys(WINDOWS) as (keyof typeof WINDOWS)[]) {
+    const at = Date.parse(m[key]?.resetsAt ?? '')
+    if (m[key]?.resetsAt !== was[key]?.resetsAt && at > Date.now()) {
+      void $.clock.after(at - Date.now(), () => setMeter($, n => settle(n, at)))
+    }
+  }
+}
+
+// The limit windows a measurement reports, as whole percents with their reset times.
+async function measure($: EngineInterface, rateLimits: readonly SessionRateLimit[]): Promise<void> {
+  const limits: Meter = {}
+  for (const [key, kind] of Object.entries(WINDOWS) as [keyof typeof WINDOWS, string][]) {
+    const w = rateLimits.find(r => r.kind === kind)
+    if (w !== undefined) {
+      limits[key] = { used: Math.round(w.percentUsed), ...(w.resetsAt === undefined ? {} : { resetsAt: w.resetsAt }) }
+    }
+  }
+  arm($, limits, await read($, meter))
+  await setMeter($, m => ({ ...limits, ...(m.cache === undefined ? {} : { cache: m.cache }) }))
+}
+
 const stored = (saved: unknown): LookState | undefined =>
   saved !== null && typeof saved === 'object' && isLook((saved as LookState).look) ? (saved as LookState) : undefined
 
@@ -286,6 +336,7 @@ export const register: Register = on => {
       $.ui.status(fault)
     }
     void $.clock.every(FOLLOW_MS, () => follow($))
+    arm($, await read($, meter))
     return next(e)
   })
 
@@ -351,7 +402,20 @@ export const register: Register = on => {
     const done = await next(e)
     if (e.agentId === undefined) {
       await setActivity($, 'idle')
+      // the share of the turn's input the prompt cache served
+      const u = e.usage
+      const input = u === undefined ? 0 : u.input_tokens + u.cache_read_input_tokens + u.cache_creation_input_tokens
+      if (u !== undefined && input > 0) {
+        await setMeter($, m => ({ ...m, cache: Math.round((100 * u.cache_read_input_tokens) / input) }))
+      }
     }
+    return done
+  })
+
+  // Claude Code's limit windows: after each turn, and whenever one moves a whole point.
+  on('session.measure', async ($, e, next) => {
+    const done = await next(e)
+    await measure($, e.rateLimits)
     return done
   })
 
@@ -374,7 +438,9 @@ export const register: Register = on => {
     }
     const look: Look = LOOKS[id]
     const a = look.live === true ? await read($, activity) : 'idle'
+    const now = new Date()
+    const m = look.meter === true ? settle(await read($, meter), now.getTime()) : {}
     const { Svg } = $.ui.resolve(e)
-    return <Svg isInteractive alt={`${look.title}: ${look.blurb}`} source={look.scene(a, await read($, state), new Date())} />
+    return <Svg isInteractive alt={`${look.title}: ${look.blurb}`} source={look.scene(a, await read($, state), now, m)} />
   })
 }

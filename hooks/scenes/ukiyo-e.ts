@@ -11,6 +11,11 @@
 // crests break and throw spray, the boats pitch, the pine sways, the reflection runs longer and shimmers.
 // Light and dark live in one SVG, switched by prefers-color-scheme. Pure string building, nothing off the app's lists.
 // A narrow window keeps the left (xMinYMid): the gate, the sun and the cartouche.
+// Claude's own figures are printed as an Edo print carries text (the meter, none until Claude Code has a reading): a
+// second cartouche beside the title holds the limit windows, each name read down the column (五時間 five hours, 七日
+// seven days) and its percent set across it, vermilion from 80; a round seal under it holds the time the five-hour
+// window resets; the red seal holds how much of the last turn's input the prompt cache served.
+import type { Limit, Meter } from '../../types'
 import { curve, limb } from './sakura'
 
 type Pt = [number, number]
@@ -195,6 +200,35 @@ function pine(): string {
   return `<path class="ptk" d="${wood}"/><path class="bk" d="${bark}"/><path class="pd" d="${dark}"/><path class="pl" d="${light}"/><path class="nd" d="${needles}"/>`
 }
 
+const MINCHO = 'Hiragino Mincho ProN, Yu Mincho, serif'
+const hhmm = (iso: string) => {
+  const d = new Date(iso)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/** The limits cartouche right of the title (x 310 to 354) and the round reset seal under it, or nothing with no
+ * reading. Each window gets the same cell: its name down the column, a fixed gap, the figure across it with ％. */
+function limits({ fiveHour, sevenDay }: Meter): string {
+  const rows = ([['五時間', fiveHour], ['七日', sevenDay]] as [string, Limit | undefined][]).filter(([, w]) => w !== undefined) as [string, Limit][]
+  if (rows.length === 0) return ''
+  let y = 66
+  let text = ''
+  rows.forEach(([name, w], i) => {
+    if (i > 0) text += `<path class="ci" d="M314 ${y}H350"/>`
+    y += 2.5
+    text += `<text class="tl" font-size="15" text-anchor="middle" font-family="${MINCHO}">${[...name].map(c => `<tspan x="332" y="${(y += 15.5)}">${c}</tspan>`).join('')}</text>`
+    // the figure ends where the digits and ％ together sit centred: a Mincho digit is about 0.54 em, ％ here 8 wide
+    const n = String(w.used)
+    const size = n.length > 2 ? 13 : 20
+    const end = Math.round(332 + (n.length * 0.54 * size - 8) / 2)
+    text += `<text class="tf${w.used >= 80 ? ' hot' : ''}" x="${end}" y="${(y += 25)}" font-size="${size}" text-anchor="end" font-family="${MINCHO}">${n}</text>`
+    text += `<text class="tl tu" x="${end + 1}" y="${y}" font-size="10" font-family="${MINCHO}">％</text>`
+    y += 3.75
+  })
+  const reset = fiveHour?.resetsAt === undefined ? '' : `<g transform="translate(332 236)"><circle class="seal" r="22"/><text class="sk" y="11" font-size="11" text-anchor="middle" font-family="${MINCHO}">${hhmm(fiveHour.resetsAt)}</text><text class="sk" y="-2" font-size="10" text-anchor="middle" font-family="${MINCHO}">時</text></g>`
+  return `<rect class="ct" x="310" y="62" width="44" height="${y + 4 - 62}"/><rect class="ci" x="314" y="66" width="36" height="${y - 66}"/>${text}${reset}`
+}
+
 // crests: [x, y, scale]; at rest one big wave breaks below the rock and a small one beside it; at work the wind breaks
 // more on both sides, always beside the chat, never behind it
 const CRESTS: [number, number, number][] = [[1440, 1000, 1.5], [1336, 968, 0.7]]
@@ -203,7 +237,7 @@ const WIND: [number, number, number][] = [[290, 958, 0.62], [352, 984, 0.8], [39
 const SKIFF: [number, number, number] = [318, 880, 0.62]
 const SAILER: [number, number, number] = [1330, 690, 0.55]
 
-export function ukiyoeScene(activity: 'idle' | 'busy' = 'idle'): string {
+export function ukiyoeScene(activity: 'idle' | 'busy' = 'idle', meter: Meter = {}): string {
   rnd = rng(23)
   const busy = activity === 'busy'
 
@@ -281,6 +315,7 @@ export function ukiyoeScene(activity: 'idle' | 'busy' = 'idle'): string {
 .cb{fill:#25508a;stroke:#1b1712;stroke-width:1.8;stroke-linejoin:round}.cl{fill:none;stroke:#7aa0c8;stroke-width:1.6;stroke-linecap:round}.cf{fill:#f7f6ee;stroke:#1b1712;stroke-width:1;stroke-linejoin:round}.cd{stroke:#f7f6ee;stroke-width:3.4;stroke-linecap:round}
 .sp{fill:none;stroke:#f7f6ee;stroke-linecap:round;opacity:.85}
 .ct{fill:#ecdfbf;stroke:#b23a22;stroke-width:2}.ci{fill:none;stroke:#b23a22;stroke-width:.8}.tt{fill:#1f1b16}.seal{fill:#b8361f}.sk{fill:#f4ecda}
+.tl{fill:#5b4b38}.tf{fill:#1f1b16}.hot{fill:#a8301b}
 .moon{fill:#f2e8c6}.mr{fill:none;stroke:#efe3bf;stroke-width:2.6;stroke-linecap:round;opacity:.7}.lamp{fill:#ffd27a}
 .bt{animation:rock ${busy ? '1.6s' : '7s'} ease-in-out infinite alternate}
 @keyframes rock{from{transform:rotate(-${busy ? 6 : 1}deg)}to{transform:translate(0,${busy ? 3 : 0.5}px) rotate(${busy ? 5 : 1}deg)}}
@@ -309,7 +344,7 @@ ${busy ? `.wv0{animation:wa 3.6s ease-in-out infinite alternate}.wv1{animation:w
 .rk{fill:#2c3846;stroke:#020409}.rd{fill:#1a232f}.hx{stroke:#000;opacity:.5}.md{stroke:#1c2e1c}
 .ls{fill:#3a3d46;stroke:#020409}
 .cb{fill:#1b3358;stroke:#020409}.cl{stroke:#3d5a82}.cf{fill:#b9c8dc;stroke:#020409}.cd{stroke:#b9c8dc}.sp{stroke:#b9c8dc}
-.ct{fill:#c2b393;stroke:#7a2a1a}.ci{stroke:#7a2a1a}.seal{fill:#8f2a18}.sk{fill:#e8dcc0}
+.ct{fill:#c2b393;stroke:#7a2a1a}.ci{stroke:#7a2a1a}.seal{fill:#8f2a18}.sk{fill:#e8dcc0}.tl{fill:#4a3d2d}.hot{fill:#7a1e10}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none !important}}
 </style>
@@ -357,8 +392,12 @@ ${boat(SKIFF, 0, ARM + (busy ? CAST : HELD))}${boat(SAILER, 1, busy ? SAIL : FUR
 <g class="lantern" transform="translate(${LX} ${LY})">${LANTERN}</g>
 ${crestS}${spray}
 <rect class="ct" x="274" y="62" width="30" height="148"/><rect class="ci" x="278" y="66" width="22" height="140"/>
-${title('L', '海辺の夕景')}${title('D', '海辺の月夜')}
-<g transform="translate(276 218)"><rect class="seal" width="26" height="26" rx="2"/><text class="sk" x="13" y="19" font-size="16" text-anchor="middle" font-family="Hiragino Mincho ProN, Yu Mincho, serif">絵</text></g>
+${title('L', '海辺の夕景')}${title('D', '海辺の月夜')}${limits(meter)}
+${
+  meter.cache === undefined
+    ? `<g transform="translate(276 218)"><rect class="seal" width="26" height="26" rx="2"/><text class="sk" x="13" y="19" font-size="16" text-anchor="middle" font-family="${MINCHO}">絵</text></g>`
+    : `<g transform="translate(275 218)"><rect class="seal" width="28" height="36" rx="2"/><text class="sk" x="14" y="31" font-size="${meter.cache > 99 ? 12 : 15}" text-anchor="middle" font-family="${MINCHO}">${meter.cache}</text><text class="sk" x="14" y="13" font-size="11" text-anchor="middle" font-family="${MINCHO}">蔵</text></g>`
+}
 <rect x="-40" width="1680" height="1010" fill="url(#mot)"/><rect x="-40" width="1680" height="1010" fill="url(#fib)"/><rect x="-40" width="1680" height="1010" fill="url(#vig)"/>
 </svg>`
 }
