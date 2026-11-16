@@ -248,7 +248,11 @@ export function dust(o: { n: number; seed: number; cls: string; chars?: string; 
     ;(x > 450 && x < 1150 ? midA : edge[i % 3]).push([g, x, y])
   }
   once('tw', () => css.push('@keyframes tw{from{opacity:.25}to{opacity:1}}.dt0{animation:tw 7s ease-in-out infinite alternate}.dt1{animation:tw 9s ease-in-out -3s infinite alternate}.dt2{animation:tw 11s ease-in-out -6s infinite alternate}'))
-  const t = (a: [string, number, number][], op: number, cls = '') => a.length ? `<text${cls ? ` class="${cls}"` : ''} opacity="${op}" x="${a.map(p => p[1]).join(' ')}" y="${a.map(p => p[2]).join(' ')}">${esc(a.map(p => p[0]).join(''))}</text>` : ''
+  const run = (a: [string, number, number][], op: number, cls: string) => `<text${cls ? ` class="${cls}"` : ''} opacity="${op}" x="${a.map(p => p[1]).join(' ')}" y="${a.map(p => p[2]).join(' ')}">${esc(a.map(p => p[0]).join(''))}</text>`
+  const t = (a: [string, number, number][], op: number, cls = '') => {
+    const cut = a.findIndex((p, i) => i > 0 && a[i - 1][0] === '/' && p[0] === '*')
+    return cut === -1 ? (a.length ? run(a, op, cls) : '') : run(a.slice(0, cut), op, cls) + t(a.slice(cut), op, cls)
+  }
   return `<g class="${o.cls}" font-size="${n1(c * 0.8)}">${edge.map((e, i) => t(e, o.edge ?? 0.5, 'dt' + i)).join('')}${t(midA, o.mid ?? 0.12)}</g>`
 }
 

@@ -166,6 +166,10 @@ Hooks:
 ```
 claude plugin validate .
 claude plugin test .
+node --test checks/rules.test.mjs
+node --test checks/follow.test.mjs
 ```
+
+`checks/rules.mjs` holds the source rules; each failure names the fix. `checks/follow/Follow.tla` is a TLA+ model of open chats following the stored look, checked by TLC (java and [tla2tools.jar](https://github.com/tlaplus/tlaplus/releases) 1.7.4 at `~/.cache/tla/`, or `TLA2TOOLS=<jar>`).
 
 Scenes live in `hooks/scenes/`, one pure function per theme that returns an SVG string. Palettes are in `hooks/palettes.ts`; `hooks/register.tsx` wires them to `/look`. The tile rasterizer behind the glyph family is described in [docs/GLYPH-KIT.md](docs/GLYPH-KIT.md).
