@@ -1,4 +1,5 @@
-export const PALETTES: Record<string, any> = {
+import type { makeColors } from './make-colors'
+export const PALETTES: Record<string, Omit<Parameters<typeof makeColors>[0], 'label'>> = {
   "clay": {
     "roles": {
       "accent": "#c96442",

@@ -155,6 +155,13 @@ const bans = [
     fix: 'only scene string builders and tests may skip tsc; type this file',
   },
   {
+    rule: 'type-any',
+    where: f => f.startsWith('hooks/') && !f.startsWith('hooks/scenes/'),
+    on: 'code',
+    re: /(?:[:<,|&(=>[]|\bas|\bextends|\bkeyof|\bsatisfies)\s*any\b/g,
+    fix: 'name the type (the callee\'s parameter type, an interface, or unknown with a guard): any turns the checker off for every value it touches',
+  },
+  {
     rule: 'rule-switch',
     where: () => true,
     re: /\b(eslint-disable|eslint-enable|biome-ignore|prettier-ignore|jshint|jscs:disable)\b|\/\*\s*(eslint|global)\s/g,

@@ -85,6 +85,19 @@ test('a scene imports only sibling scenes and types, relative climbs included', 
 })
 
 test('type checks and rules have no inline off switch', () => {
+  fails('hooks/palettes.ts', 'export const P: Record<string, any> = {}\n', 'type-any', /name the type/)
+  fails('hooks/register.tsx', 'const a: any = 1\n', 'type-any', /unknown with a guard/)
+  fails('hooks/register.tsx', 'f(x as any)\n', 'type-any', /turns the checker off/)
+  fails('hooks/register.tsx', 'const f = (a: string | any) => a\n', 'type-any', /name the type/)
+  fails('hooks/register.tsx', 'type Loose = any\n', 'type-any', /name the type/)
+  fails('hooks/register.tsx', 'const f = (x: number): Promise<any> => g(x)\n', 'type-any', /name the type/)
+  fails('hooks/register.tsx', 'type F = (x: number) => any\n', 'type-any', /name the type/)
+  fails('hooks/register.tsx', 'type T<X extends any> = X\n', 'type-any', /name the type/)
+  fails('hooks/register.tsx', 'type P = [any, number]\n', 'type-any', /name the type/)
+  fails('hooks/register.tsx', 'const y = x satisfies any\n', 'type-any', /name the type/)
+  passes('hooks/register.tsx', "const many = 1\nconst t = 'pick any look: any'\nconst u: unknown = many\n")
+  passes('hooks/scenes/a.ts', '// @ts-nocheck\nconst a: any = 1\n')
+  passes('tests/a.test.tsx', 'const a: any = 1\n')
   fails('hooks/register.tsx', '// @ts-ignore\nconst a: number = "x"\n', 'type-escape', /fix the type at its source/)
   fails('hooks/register.tsx', 'const a = 1 // @ts-expect-error\n', 'type-escape', /fix the type/)
   fails('tests/a.test.tsx', '/* @ts-expect-error */\n', 'type-escape', /fix the type/)
@@ -168,4 +181,12 @@ test('every look has its preview and README row', () => {
     ...(readme.includes(`\`${id}\``) ? [] : [`${id}: no README row; add one naming \`${id}\``]),
   ])
   assert.deepEqual(missing, [])
+})
+
+test('a /look command catches up with other chats before it writes, and every chat follows on a timer, as checks/follow/Follow.tla assumes', () => {
+  const src = readFileSync(new URL('../hooks/register.tsx', import.meta.url), 'utf8')
+  const run = src.slice(src.indexOf("on('command.run'"), src.indexOf("on('session.attach'"))
+  const follows = run.indexOf('await follow($)')
+  assert.ok(src.includes('void $.clock.every(FOLLOW_MS, () => follow($))'), 'session.start must arm follow on $.clock.every: Follow.tla proves convergence only with that timer (NoTimer.cfg)')
+  assert.ok(follows !== -1 && follows < run.indexOf('await read($, state)') && follows < run.indexOf('$.store.set'), 'command.run must await follow($) before it reads or writes the stored look, or a chat writes its old look over a newer choice (the NoCatchUp.cfg trace)')
 })
