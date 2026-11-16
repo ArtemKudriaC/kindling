@@ -1,6 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Clay: smooth ceramic stones in a warm low sun, with a thin ink line that draws itself around them.
-// Pure string building. Stones are seeded organic blobs; light, rim and grain come from gradients and filters.
 
 type P = [number, number]
 
@@ -9,7 +7,6 @@ const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296)
 
 const f = (n: number) => Math.round(n * 10) / 10
 
-/** Open or closed Catmull-Rom spline through points, as cubic beziers. */
 function spline(p: P[], closed: boolean): string {
   const n = p.length
   const at = (i: number) => (closed ? p[(i + n) % n] : p[Math.max(0, Math.min(n - 1, i))])
@@ -22,7 +19,6 @@ function spline(p: P[], closed: boolean): string {
   return d + (closed ? 'Z' : '')
 }
 
-/** A smooth stone outline: slightly flattened underside, gentle seeded wobble. */
 function stone(cx: number, cy: number, rx: number, ry: number, s: number): string {
   seed = s
   const pts: P[] = []
@@ -37,7 +33,6 @@ function stone(cx: number, cy: number, rx: number, ry: number, s: number): strin
   return spline(pts, true)
 }
 
-/** One deliberate hand-drawn loop, closed and smooth, starting at the base of the stack and going clockwise. */
 function loop(cx: number, cy: number, rx: number, ry: number, s: number, tilt: number): string {
   const pts: P[] = []
   const n = 20
@@ -92,7 +87,6 @@ function shadows(list: Stone[], long: number): string {
   return o
 }
 
-/** The ink goes behind the stones: a loop around the stack with a glowing draw-head dot. */
 function ink(cx: number, cy: number, rx: number, ry: number, s: number, tilt: number): string {
   const d = loop(cx, cy, rx, ry, s, tilt)
   return `<path class="base" d="${d}"/>` + `<path class="ink glow" pathLength="100" d="${d}" filter="url(#soft2)"/>` +

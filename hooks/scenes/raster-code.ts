@@ -5,7 +5,6 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
   const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296
   const f = (n: number) => +n.toFixed(1)
 
-  // Bayer 4x4 threshold cells fed into the quantizer
   const B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5]
   const cellsOf = (size: number, on: string, off: string) => B.map((v, i) => {
     const t = (v + 0.5) / 16 - 0.5
@@ -14,11 +13,9 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
   const bayer = cellsOf(7, '#fff6ea', '#0c0706')
   const bayer5 = cellsOf(5, '#fff6ea', '#0c0706')
   const twoTone = B.map((v, i) => v < 6 ? `<rect x="${(i % 4) * 7}" y="${Math.floor(i / 4) * 7}" width="7" height="7" fill="#653d2c"/>` : '').join('')
-  // busy sweep: bright bands only (mask keeps them in the outer 400px of each side)
   const bands = ([[-420, 110, '#f6e2c0', 0.7], [150, 120, '#f0be8c', 0.6]] as [number, number, string, number][])
     .map(([y, h, c, o]) => `<rect x="-1200" y="${y}" width="4000" height="${h}" fill="${c}" opacity="${o}"/>`).join('')
 
-  // ---- the hero: one flowering branch hanging from the top-right corner ----
   const bez = (p: number[][], t: number) => {
     const u = 1 - t
     return [0, 1].map(k => u * u * u * p[0][k] + 3 * u * u * t * p[1][k] + 3 * u * t * t * p[2][k] + t * t * t * p[3][k])
@@ -43,7 +40,7 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
     { t: 0.2, e: [1575, 330], bow: -40, w: 24 }, { t: 0.38, e: [1470, 250], bow: 30, w: 22 },
     { t: 0.5, e: [1335, 70], bow: -30, w: 20 }, { t: 0.62, e: [1440, 465], bow: -50, w: 22 }, { t: 0.82, e: [1255, 505], bow: 40, w: 18 },
   ]
-  const blossoms: [number, number, number, number, number][] = [ // x, y, scale, rot, variant
+  const blossoms: [number, number, number, number, number][] = [
     [1195, 395, 1.1, 10, 0], [1575, 330, 0.95, 40, 1], [1470, 250, 1.2, -20, 0], [1335, 70, 0.8, 25, 1], [1440, 465, 1.0, -35, 1],
   ]
   let wood = '', hi = '', nicks = '', leaves = ''
@@ -76,7 +73,6 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
   })
   leaves += leaf(1255, 505, 150, 1.5) + leaf(1250, 520, 95, 1.2)
   const bloom = blossoms.map(([x, y, s, r, v]) => `<use href="#bl${v}" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"/>`).join('')
-  // petals that drift off the branch in busy
   const petalSrc = [[1195, 395], [1575, 330], [1470, 250], [1335, 70], [1440, 465], [1300, 300], [1520, 160]]
   const drift = Array.from({ length: 9 }, (_, i) => {
     const px = 1230 + Math.round(rnd() * 330), py = 130 + Math.round(rnd() * 380)
@@ -84,7 +80,6 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
     const dx = -(50 + Math.round(rnd() * 100)), dy = 260 + Math.round(rnd() * 240), rot = Math.round((rnd() - 0.3) * 420)
     return `<g class="pd" style="--dx:${dx}px;--dy:${dy}px;--o:${o};--r:${rot}deg;animation-delay:${(-i * 1.3).toFixed(1)}s;animation-duration:${(9 + (i % 4) * 2.2).toFixed(1)}s"><use href="#pet" transform="translate(${px} ${py}) rotate(${i * 53}) scale(${(sz * 1.6 / 66).toFixed(3)} ${(sz / 66).toFixed(3)})"/></g>`
   }).join('')
-  // click on the branch: 7 petals fall (unfiltered layer, crisp)
   let fall = ''
   for (let i = 0; i < 7; i++) {
     const [x, y] = petalSrc[i % 5]
@@ -93,7 +88,6 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
     fall += `<g opacity="0"><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.7;1" dur="${d}s" begin="brh.click+${b}s"/><animateTransform attributeName="transform" type="translate" values="${x} ${y};${x + dx * 0.4} ${y + dy * 0.35};${x + dx} ${y + dy}" keyTimes="0;.35;1" dur="${d}s" begin="brh.click+${b}s"/><g><animateTransform attributeName="transform" type="rotate" values="${i * 40};${i * 40 + 220}" dur="${d}s" begin="brh.click+${b}s"/><use href="#pet" transform="scale(.5)"/></g></g>`
   }
 
-  // ---- edge click cells and pixel blooms ----
   const colsL = [0, 110, 220, 330], colsR = [1160, 1270, 1380, 1490]
   type Cell = { id: string; x: number; y: number; side: 'L' | 'R'; col: number; grp: string }
   const cells: Cell[] = []
@@ -102,7 +96,7 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
   }))
   const grpIds = ['L0', 'L1', 'R0', 'R1']
   const hitCells = (side: 'L' | 'R') => cells.filter(c => c.side === side).map(c => `<rect id="${c.id}" class="hit cl${side}${c.col}" x="${c.x + 2}" y="${c.y + 2}" width="106" height="107"/>`).join('')
-  const ringSpec: [string, number, number, number, number][] = [ // colour, n, r1, delay, dur
+  const ringSpec: [string, number, number, number, number][] = [
     ['#f0eee6', 14, 150, 0, 0.9], ['#f0eee6', 22, 215, 0.05, 1.0], ['#f0eee6', 30, 275, 0.1, 1.1],
   ]
   const pcol = ['#d97757', '#e8d9bf', '#f0eee6', '#8aa583']
@@ -130,7 +124,6 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
     const flash = `<circle r="64" fill="url(#fp)" mask="url(#fm)" opacity="0"><animate attributeName="opacity" values="1;1;0" keyTimes="0;.55;1" dur=".36s" begin="${bg(0)}"/></circle><circle r="28" fill="url(#fp2)" mask="url(#fm)" opacity="0"><animate attributeName="opacity" values="1;1;0" keyTimes="0;.7;1" dur=".32s" begin="${bg(0)}"/></circle>`
     return `<svg id="bm${g}" x="0" y="0" width="1" height="1" overflow="visible">${trig}${pos}${flash}${rings}${parts}</svg>`
   }
-  // stamens for the blossoms
   let stam = ''
   for (let k = 0; k < 9; k++) {
     const a = k * 40 + 12, l = 20 + (k % 3) * 5
@@ -178,9 +171,12 @@ export function rasterCodeScene(state: 'idle' | 'busy'): string {
 <mask id="mbay"><rect width="1600" height="1000" fill="url(#gm)"/></mask>
 <mask id="msw"><rect width="1600" height="1000" fill="url(#gs)"/></mask>
 <filter id="nz" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000"><feTurbulence type="fractalNoise" baseFrequency=".17" numOctaves="1" seed="7"/><feColorMatrix values="1.2 0 0 0 -.1  0 1.2 0 0 -.1  0 0 1.2 0 -.1  0 0 0 0 1"/></filter>
-<filter id="q" filterUnits="userSpaceOnUse" x="0" y="0" width="1603" height="1001" color-interpolation-filters="sRGB"><feFlood x="3" y="3" width="1" height="1"/><feComposite width="7" height="7" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="3"/><feComponentTransfer><feFuncR type="discrete" tableValues=".11 .24 .36 .5 .62 .74 .86 .96"/><feFuncG type="discrete" tableValues=".1 .2 .31 .44 .56 .69 .81 .93"/><feFuncB type="discrete" tableValues=".09 .19 .3 .38 .52 .63 .74 .88"/></feComponentTransfer></filter>
-<filter id="q3" filterUnits="userSpaceOnUse" x="0" y="0" width="1603" height="1001" color-interpolation-filters="sRGB"><feFlood x="3" y="3" width="1" height="1"/><feComposite width="7" height="7" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="3"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.050 0.110 0.170 0.230 0.290 0.350 0.410 0.470 0.530 0.590 0.650 0.710 0.770 0.830 0.890 0.950"/><feFuncG type="discrete" tableValues="0.050 0.110 0.170 0.230 0.290 0.350 0.410 0.470 0.530 0.590 0.650 0.710 0.770 0.830 0.890 0.950"/><feFuncB type="discrete" tableValues="0.050 0.110 0.170 0.230 0.290 0.350 0.410 0.470 0.530 0.590 0.650 0.710 0.770 0.830 0.890 0.950"/></feComponentTransfer></filter>
-<filter id="q2" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000" color-interpolation-filters="sRGB"><feFlood x="2" y="2" width="1" height="1"/><feComposite width="5" height="5" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="2"/><feComponentTransfer><feFuncR type="discrete" tableValues=".11 .24 .36 .5 .62 .74 .86 .96"/><feFuncG type="discrete" tableValues=".1 .2 .31 .44 .56 .69 .81 .93"/><feFuncB type="discrete" tableValues=".09 .19 .3 .38 .52 .63 .74 .88"/></feComponentTransfer></filter>
+<filter id="q" filterUnits="userSpaceOnUse" x="0" y="0" width="1603" height="1001" color-interpolation-filters="sRGB"><feFlood x="3" y="3" width="1" height="1"/><feComposite width="7" height="7" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="3"/>
+<feComponentTransfer><feFuncR type="discrete" tableValues=".11 .24 .36 .5 .62 .74 .86 .96"/><feFuncG type="discrete" tableValues=".1 .2 .31 .44 .56 .69 .81 .93"/><feFuncB type="discrete" tableValues=".09 .19 .3 .38 .52 .63 .74 .88"/></feComponentTransfer></filter>
+<filter id="q3" filterUnits="userSpaceOnUse" x="0" y="0" width="1603" height="1001" color-interpolation-filters="sRGB"><feFlood x="3" y="3" width="1" height="1"/><feComposite width="7" height="7" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="3"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.050 0.110 0.170 0.230 0.290 0.350 0.410 0.470 0.530 0.590 0.650 0.710 0.770 0.830 0.890 0.950"/>
+<feFuncG type="discrete" tableValues="0.050 0.110 0.170 0.230 0.290 0.350 0.410 0.470 0.530 0.590 0.650 0.710 0.770 0.830 0.890 0.950"/><feFuncB type="discrete" tableValues="0.050 0.110 0.170 0.230 0.290 0.350 0.410 0.470 0.530 0.590 0.650 0.710 0.770 0.830 0.890 0.950"/></feComponentTransfer></filter>
+<filter id="q2" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000" color-interpolation-filters="sRGB"><feFlood x="2" y="2" width="1" height="1"/><feComposite width="5" height="5" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="2"/>
+<feComponentTransfer><feFuncR type="discrete" tableValues=".11 .24 .36 .5 .62 .74 .86 .96"/><feFuncG type="discrete" tableValues=".1 .2 .31 .44 .56 .69 .81 .93"/><feFuncB type="discrete" tableValues=".09 .19 .3 .38 .52 .63 .74 .88"/></feComponentTransfer></filter>
 <filter id="sb" filterUnits="userSpaceOnUse" x="-400" y="-400" width="2400" height="1800"><feGaussianBlur stdDeviation="26"/></filter>
 
 <linearGradient id="tw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a07a52"/><stop offset=".5" stop-color="#6a4c33"/><stop offset="1" stop-color="#3a291d"/></linearGradient>
@@ -266,7 +262,8 @@ ${busy ? '<g class="dr"><g id="gl3"><ellipse cx="130" cy="700" rx="460" ry="250"
 <rect id="bayr" width="1600" height="1000" fill="url(#bay)" mask="url(#mbay)"/>
 </g>
 <g mask="url(#gapm)"><rect id="gapr" width="1600" height="1000" fill="url(#gaps)"/></g>
-<g id="fine" filter="url(#qf)"><g id="bc" opacity=".4"><use href="#lfB" transform="translate(120 850) rotate(-25) scale(.9)"/><use href="#lfC" transform="translate(250 915) rotate(200) scale(.8)"/><use href="#lfA" transform="translate(120 850) rotate(-100) scale(.7)"/><use href="#bl1" transform="translate(150 835) rotate(15) scale(.7)"/><use href="#bl0" transform="translate(255 900) rotate(-30) scale(.55)"/></g><g id="brw"><use href="#brg" filter="url(#shd)" transform="translate(5 6)"/><use href="#brg"/><use href="#brg" filter="url(#rim)"/><g mask="url(#brm)"><rect x="0" y="-100" width="1800" height="800" fill="url(#gd)"/></g>${busy ? drift : ''}</g></g>
+<g id="fine" filter="url(#qf)"><g id="bc" opacity=".4"><use href="#lfB" transform="translate(120 850) rotate(-25) scale(.9)"/><use href="#lfC" transform="translate(250 915) rotate(200) scale(.8)"/><use href="#lfA" transform="translate(120 850) rotate(-100) scale(.7)"/><use href="#bl1" transform="translate(150 835) rotate(15) scale(.7)"/>
+<use href="#bl0" transform="translate(255 900) rotate(-30) scale(.55)"/></g><g id="brw"><use href="#brg" filter="url(#shd)" transform="translate(5 6)"/><use href="#brg"/><use href="#brg" filter="url(#rim)"/><g mask="url(#brm)"><rect x="0" y="-100" width="1800" height="800" fill="url(#gd)"/></g>${busy ? drift : ''}</g></g>
 <rect id="vgr" width="1600" height="1000" fill="url(#vg)"/>
 <g id="fx"><g id="brwf">${fall}</g><g id="bmwL">${bloomOf('L0')}${bloomOf('L1')}</g><g id="bmwR">${bloomOf('R0')}${bloomOf('R1')}</g></g>
 <g id="hits"><g id="hwL">${hitCells('L')}</g><g id="hwR">${hitCells('R')}</g><g id="brhw"><polygon id="brh" class="hit" points="${hitPoly}"/></g></g>

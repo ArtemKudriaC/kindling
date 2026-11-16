@@ -1,10 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// «Сакура»: Japan of the shoguns in ink on old paper. A castle keep stands on a hill under a red sun (the moon at night),
-// far mountains fade into mist, and an old cherry tree leans in from the right; a branch reaches in at the top left.
-// Resting: petals drift down one by one. Working: the wind takes them across, the tree sways, the banners fly.
-// Light and dark live in one SVG, switched by prefers-color-scheme. Pure string building.
-// Like «Осень» (gouache-autumn.ts) it holds nothing off the app's lists, so the app plays it: no feTurbulence, no media
-// rule on the window's shape. A narrow window keeps the left (xMinYMid): the castle, the sun and the left lane of petals.
 
 const rng = (seed: number) => () => {
   seed = (seed * 1664525 + 1013904223) >>> 0
@@ -13,19 +7,15 @@ const rng = (seed: number) => () => {
 const r0 = (n: number) => Math.round(n)
 let rnd = rng(17)
 
-// the castle on its hill, in the strip both layouts leave clear on the left (x 260 to 430)
 const CX = 345
 const CY = 735
-// the sun, or the moon, above it
 const SX = 330
 const SY = 205
-// the foot of the cherry tree, in the strip on the right (x 1282 to 1600)
 const TX = 1462
 const TY = 912
 
 type Pt = [number, number]
 
-/** A brush stroke along pts, as one path; widths taper from w0 to w1 by drawing it in short pieces. */
 function stroke(pts: Pt[], w0: number, w1: number, cls: string): string {
   let out = ''
   const n = pts.length - 1
@@ -38,7 +28,6 @@ function stroke(pts: Pt[], w0: number, w1: number, cls: string): string {
   return out
 }
 
-/** A limb as one filled shape along c, tapering from w0 to w1, its edges a little uneven like a brush. */
 export function limb(c: Pt[], w0: number, w1: number): string {
   const n = c.length - 1
   const L: string[] = []
@@ -59,7 +48,6 @@ export function limb(c: Pt[], w0: number, w1: number): string {
   return `M${L.join('L')}L${R.reverse().join('L')}Z`
 }
 
-/** A smooth line through pts, sampled: Catmull-Rom, k samples per span. */
 export function curve(pts: Pt[], k = 6): Pt[] {
   const out: Pt[] = []
   for (let i = 0; i < pts.length - 1; i++) {
@@ -79,8 +67,6 @@ export function curve(pts: Pt[], k = 6): Pt[] {
   return out
 }
 
-/** Blossom around (x, y): a soft wash behind, then small flowers in four tones and three sizes, lit from the upper
- * left. A flower is a dot: a zero-length line with a round cap, so d[tone][size] holds `Mx yh0` runs. */
 function bloom(x: number, y: number, r: number, n: number, d: string[][], wash: string[]): void {
   wash.push(`M${r0(x - r)} ${r0(y)}a${r0(r)} ${r0(r * 0.8)} 0 1 0 ${r0(2 * r)} 0a${r0(r)} ${r0(r * 0.8)} 0 1 0 ${r0(-2 * r)} 0`)
   for (let i = 0; i < n; i++) {
@@ -94,11 +80,9 @@ function bloom(x: number, y: number, r: number, n: number, d: string[][], wash: 
   }
 }
 const SIZES = [6, 8.5, 11.5]
-/** The flowers that bloom() gathered, as twelve paths. */
 const flowers = (d: string[][]) => d.map((row, t) => row.map((p, k) => (p ? `<path class="b${t}" d="${p}" stroke-width="${SIZES[k]}"/>` : '')).join('')).join('')
 const pots = () => [0, 1, 2, 3].map(() => ['', '', ''])
 
-/** The cherry tree, in tree coordinates (its foot at 0 0): ink trunk and branches, blossom on the twigs. */
 function tree(): string {
   const limbs: [Pt[], number, number][] = [
     [[[22, 4], [4, -110], [-36, -230], [-62, -330], [-74, -360]], 64, 30],
@@ -118,14 +102,12 @@ function tree(): string {
   limbs.forEach(([pts, w0, w1], i) => {
     const c = curve(pts, 10)
     ink += limb(c, w0, w1)
-    // dry-brush bark: thin pale streaks that run with the thicker limbs
     if (w0 > 20) for (const o of [-0.22, 0.05, 0.3]) bark += stroke(c.filter((_, k) => k % 2 === 0).map(([x, y]) => [x + w0 * o * 0.5, y] as Pt), 2.2, 1, 'bk')
     if (i > 0) c.slice(Math.floor(c.length / 3)).forEach(([x, y], k) => k % 2 === 0 && ((r) => bloom(x, y, r, Math.round(r * 1.1), d, wash))(22 + rnd() * rnd() * 60))
   })
   return `<path class="bw" d="${wash.join('')}" filter="url(#b8)"/><path class="tf" d="${ink}"/>${bark}${flowers(d)}`
 }
 
-/** The branch that reaches in at the top left, in picture coordinates. */
 function branch(): string {
   const d = pots()
   const wash: string[] = []
@@ -136,11 +118,9 @@ function branch(): string {
   return `<path class="bw" d="${wash.join('')}" filter="url(#b8)"/><path class="tf" d="${limb(main, 18, 4)}${limb(twig, 6, 2)}${limb(up, 7, 2)}"/>${flowers(d)}`
 }
 
-/** An upturned roof: eaves from -w to w at y, ridge h above. */
 const roof = (w: number, y: number, h: number) =>
   `M${-w} ${y}Q${r0(-w * 0.72)} ${r0(y - h * 0.18)} ${r0(-w * 0.6)} ${y - h}L${r0(w * 0.6)} ${y - h}Q${r0(w * 0.72)} ${r0(y - h * 0.18)} ${w} ${y}Q${r0(w * 0.5)} ${y - 4} 0 ${y - 3}Q${r0(-w * 0.5)} ${y - 4} ${-w} ${y}Z`
 
-/** The keep, in castle coordinates (the foot of its stone base at 0 0). */
 function castle(): string {
   const wins = (y: number, w: number, n: number) =>
     Array.from({ length: n }, (_, i) => `M${r0(-w + ((2 * w) / (n - 1)) * i - 3)} ${y}h6v9h-6Z`).join('')
@@ -157,11 +137,9 @@ function castle(): string {
 <g class="pole" transform="translate(72 0)"><path class="pl" d="M0 0V-118" stroke-width="2.2"/><g class="nb n2"><path class="ver" d="M1 -114h12v52h-12Z"/></g></g>`
 }
 
-/** One pine on the hill: three flat tiers of ink on a crooked trunk. */
 const pine = (x: number, y: number, s: number) =>
   `<g transform="translate(${x} ${y}) scale(${s})"><path class="tk" d="M0 0q-6 -22 4 -52" stroke-width="5" fill="none"/><path class="pn" d="M-34 -30c10 -12 30 -14 44 -8c10 -6 26 -2 30 8c-24 -4 -50 -4 -74 0ZM-26 -48c10 -10 26 -12 36 -6c8 -4 20 -2 24 6c-20 -3 -40 -3 -60 0ZM-14 -64c8 -8 18 -9 26 -4c6 -2 12 0 14 4c-14 -2 -27 -2 -40 0Z"/></g>`
 
-/** Petals in the air: the leaves of «Осень» (gouache-autumn.ts), as petals. */
 function falling(busy: boolean): string {
   let out = ''
   let i = 0
@@ -177,14 +155,11 @@ function falling(busy: boolean): string {
         break
       }
     }
-    // A petal whose way never crosses a side lane has nowhere to hang: it shows only while it falls.
     const still = p < 0 ? ((p = 0.5), 'opacity:0;') : ''
     out += `<g class="f${cls}" style="${still}--x:${r0(x)}px;--y:${r0(y)}px;--w:${r0(w)}px;--h:${r0(h)}px;--r:${r0(turn)}deg;--bx:${r0(x + w * p)}px;--by:${r0(y + h * p)}px;animation-duration:${dur.toFixed(1)}s;animation-delay:-${(rnd() * dur).toFixed(1)}s"><g class="sw" style="animation-delay:-${(rnd() * 3).toFixed(1)}s"><use href="#pt" class="p${i % 2}" transform="scale(${size.toFixed(2)})"/></g></g>`
     i++
   }
-  // the left lane: out of the branch at the top left, down past the castle hill
   for (let k = 0; k < (busy ? 7 : 14); k++) one(120 + rnd() * 300, 60 + rnd() * 90, -(20 + rnd() * 120), 640 + rnd() * 200, busy ? 4 + rnd() * 2.5 : 10 + rnd() * 7, 1.2 + rnd() * 0.9)
-  // the right lane: out of the crown, down to the ground
   for (let k = 0; k < (busy ? 7 : 14); k++) {
     const x = TX - 230 + rnd() * 380
     const y = TY - 640 + rnd() * 300
@@ -192,7 +167,6 @@ function falling(busy: boolean): string {
   }
   if (!busy) for (let k = 0; k < 4; k++) one(480 + rnd() * 640, 60 + rnd() * 280, -(40 + rnd() * 200), 300 + rnd() * 300, 12 + rnd() * 8, 0.9 + rnd() * 0.5)
   else {
-    // the wind: off the crown and across the whole picture, and a few close to the eye
     for (let k = 0; k < 24; k++) one(TX - 220 + rnd() * 380, TY - 660 + rnd() * 420, -(500 + rnd() * 1200), 60 + rnd() * 360, 3.6 + rnd() * 3.4, 0.8 + rnd() * 0.6)
     for (let k = 0; k < 12; k++) one(200 + rnd() * 520, 80 + rnd() * 520, -(320 + rnd() * 420), 120 + rnd() * 320, 3.2 + rnd() * 2.8, 0.9 + rnd() * 0.6)
     for (let k = 0; k < 3; k++) one(1500 + rnd() * 300, 560 + rnd() * 240, -2100, 40 + rnd() * 120, 4.5 + rnd() * 2.5, 2 + rnd() * 0.6, ' nf')
@@ -200,7 +174,6 @@ function falling(busy: boolean): string {
   return out
 }
 
-/** A ridge of far mountains: a wavy line from x0 to x1 around y, peaks of height a. */
 function ridge(y: number, a: number, f: number, ph: number): string {
   let d = `M-40 1010L-40 ${r0(y)}`
   for (let x = -40; x <= 1640; x += 20) {
@@ -214,7 +187,6 @@ export function sakuraScene(activity: 'idle' | 'busy' = 'idle'): string {
   rnd = rng(17)
   const busy = activity === 'busy'
 
-  // a few stars at night, and a skein of geese in the sky at the left
   let stars = ''
   for (let i = 0; i < 46; i++) {
     const x = rnd() * 1600
@@ -230,7 +202,6 @@ export function sakuraScene(activity: 'idle' | 'busy' = 'idle'): string {
     const x = CX - half * 0.8 + rnd() * half * 1.6
     hillStreaks += `M${r0(x)} ${r0(y)}q${r0(18 + rnd() * 30)} ${r0(-3 + rnd() * 6)} ${r0(40 + rnd() * 70)} ${r0(rnd() * 8)}`
   }
-  // paper fibres: short pale and dark hairs scattered over one tile
   let fibres = ''
   for (let i = 0; i < 160; i++) {
     const a = rnd() * Math.PI

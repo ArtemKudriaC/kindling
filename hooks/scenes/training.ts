@@ -1,7 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Training: sports-watch-face scene. A lit terracotta running track runs across the whole bottom edge
-// (lanes converge toward the centre-right horizon); a heart-rate readout and rest/work ring sit top-right.
-// Same composition in both states: busy = work, idle = rest. Pure string building, CSS animation only.
 
 const f = (n: number) => Math.round(n * 10) / 10
 const VX = 1020
@@ -19,7 +16,6 @@ function ecgPath(): string {
 
 export function trainingScene(state: 'idle' | 'busy'): string {
   const busy = state === 'busy'
-  // tapered lane lines: hair-thin at the horizon, wide at the viewer
   let lanes = ''
   for (let b = -500; b <= 2300; b += 560) {
     const xb = xAt(b, 1000)

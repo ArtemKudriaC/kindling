@@ -1,8 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Recovery: the day's recovery score as one lit object. A thick progress ring, filled to the score, sits right of the
-// chat with the number as hero. Behind it a saturated aurora in the zone colour (red, amber, green, blended).
-// Higher score: bigger, brighter aurora and a slow, wide breath. Lower: smaller, dimmer, quicker pulse.
-// Unknown: cool grey-blue, empty ring, "--". Pure string building, deterministic.
 
 const RED = [232, 84, 80]
 const AMBER = [244, 158, 24]
@@ -34,10 +30,9 @@ export function recoveryScene(score: number | undefined): string {
   const pale = hex(mix(rgb, [235, 242, 248], 0.7))
   const deep = hex(mix(rgb, [8, 14, 22], 0.72))
   const mid = hex(mix(rgb, [8, 14, 22], 0.45))
-  // pulse period: 7.5 s when calm (100) to 3.8 s when low (0); unknown 9 s
   const period = known ? 3.8 + (s / 100) * 3.7 : 9
   const p = period.toFixed(2)
-  const k = known ? s / 100 : 0.3 // aurora strength
+  const k = known ? s / 100 : 0.3
   const core = known ? 0.3 + 0.12 * k : 0.2
   const size = 0.7 + 0.5 * k
   const amp = known ? (1.1 - 0.06 * k).toFixed(3) : '1.03'

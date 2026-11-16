@@ -1,7 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Terracotta: a clay plaster wall. Light: window sun patches and leaf shadows drifting at the edge.
-// Dark: the same wall lamp-lit in the evening, a warm pool of light and a soft shadow sway.
-// Pure string building; light and dark live in one SVG, switched by prefers-color-scheme.
 
 let seed = 7
 function rnd(): number {
@@ -10,7 +7,6 @@ function rnd(): number {
 }
 const f = (n: number) => n.toFixed(1)
 
-/** A branch of leaves hanging from (0,0) toward +x/+y, in local coordinates. */
 function branch(n: number, len: number, leaf: number): string {
   let out = ''
   const pts: [number, number][] = []
@@ -36,7 +32,6 @@ export function terracottaScene(): string {
   const leavesA = branch(11, 520, 120)
   const leavesB = branch(8, 380, 100)
   const leavesC = branch(9, 430, 105)
-  // sun through a four-pane window, skewed as it falls on the wall at the top right
   const pane = (x: number, y: number, w: number, h: number) =>
     `<path d="M${x} ${y} L${x + w} ${y - 70} L${x + w + 40} ${y + h - 70} L${x + 40} ${y + h}Z"/>`
   const sun = pane(1140, 60, 190, 230) + pane(1360, 0, 190, 230) + pane(1180, 330, 190, 230) + pane(1400, 270, 190, 230)
@@ -69,7 +64,8 @@ export function terracottaScene(): string {
 <linearGradient id="sunG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1cf"/><stop offset="1" stop-color="#ffc98a"/></linearGradient>
 <linearGradient id="beam" gradientUnits="userSpaceOnUse" x1="1600" y1="0" x2="900" y2="800"><stop offset="0" stop-color="#ffe3b0" stop-opacity=".75"/><stop offset=".55" stop-color="#ffc07e" stop-opacity=".3"/><stop offset="1" stop-color="#ffb070" stop-opacity="0"/></linearGradient>
 <linearGradient id="wallD" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#3a2620"/><stop offset=".6" stop-color="#2c2422"/><stop offset="1" stop-color="#262120"/></linearGradient>
-<radialGradient id="glowD" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd7a0" stop-opacity="1"/><stop offset="0.08" stop-color="#ffbd82" stop-opacity="0.97"/><stop offset="0.18" stop-color="#f59a60" stop-opacity="0.88"/><stop offset="0.3" stop-color="#de7442" stop-opacity="0.7"/><stop offset="0.42" stop-color="#c25c34" stop-opacity="0.52"/><stop offset="0.55" stop-color="#a24a2b" stop-opacity="0.36"/><stop offset="0.68" stop-color="#82392a" stop-opacity="0.22"/><stop offset="0.8" stop-color="#663228" stop-opacity="0.11"/><stop offset="0.9" stop-color="#4a2a24" stop-opacity="0.045"/><stop offset="1" stop-color="#3a2620" stop-opacity="0"/></radialGradient>
+<radialGradient id="glowD" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd7a0" stop-opacity="1"/><stop offset="0.08" stop-color="#ffbd82" stop-opacity="0.97"/><stop offset="0.18" stop-color="#f59a60" stop-opacity="0.88"/><stop offset="0.3" stop-color="#de7442" stop-opacity="0.7"/><stop offset="0.42" stop-color="#c25c34" stop-opacity="0.52"/>
+<stop offset="0.55" stop-color="#a24a2b" stop-opacity="0.36"/><stop offset="0.68" stop-color="#82392a" stop-opacity="0.22"/><stop offset="0.8" stop-color="#663228" stop-opacity="0.11"/><stop offset="0.9" stop-color="#4a2a24" stop-opacity="0.045"/><stop offset="1" stop-color="#3a2620" stop-opacity="0"/></radialGradient>
 <radialGradient id="rim" cx=".5" cy=".5" r=".5"><stop offset=".78" stop-color="#ffb27a" stop-opacity="0"/><stop offset=".88" stop-color="#ffb27a" stop-opacity=".08"/><stop offset="1" stop-color="#ffb27a" stop-opacity="0"/></radialGradient>
 <radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#2a0f06" stop-opacity="0"/><stop offset="1" stop-color="#2a0f06" stop-opacity=".3"/></radialGradient>
 </defs>

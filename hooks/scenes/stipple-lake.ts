@@ -1,10 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Stipple lake: a wooded slope over a still lake, painted in dabs.
-// Light: a warm morning, blue hills behind a green wood, a fisherman in an orange boat.
-// Dark: the same lake under a moon, all in blues, a lantern on the bow.
-// idle: the boat rests and the float bobs. busy: the boat is paddled across the lake and pulls a wake.
-// Click the water for rings and a jumping fish, click the boat to rock it.
-// Light and dark live in one SVG, switched by prefers-color-scheme. Pure string building.
 
 let seed = 11
 function rnd(): number {
@@ -16,20 +10,16 @@ const SHORE = 640
 const ROWS = 9
 const SIZES = [30, 38, 46, 56, 68]
 
-/** Top of the wooded slope at x: a tall hill on the left, a saddle, a lower hill on the right. */
 const ridge = (x: number) => 300 - 190 * Math.exp(-(((x - 360) / 340) ** 2)) - 120 * Math.exp(-(((x - 1300) / 280) ** 2))
 
 const hex = (c: string) => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16))
-/** Mix two #rrggbb colours. */
 const mix = (a: string, b: string, t: number) =>
   '#' + hex(a).map((v, i) => Math.round(v + (hex(b)[i] - v) * t).toString(16).padStart(2, '0')).join('')
-/** Colour at t (0..1) along evenly spaced stops. */
 const ramp = (stops: string[], t: number) => {
   const k = Math.min(stops.length - 2, Math.floor(t * (stops.length - 1)))
   return mix(stops[k], stops[k + 1], t * (stops.length - 1) - k)
 }
 
-// far ridge .. shore: crown top, crown bottom, and the three dab hues laid on the lit side
 const TONE = {
   light: {
     top: ['#26388f', '#2b5c9c', '#2f8273', '#93c088'],
@@ -47,19 +37,16 @@ const TONE = {
   },
 }
 
-/** A crown: one big ball and five smaller ones on its shoulders. Each ball takes the row gradient on its own box. */
 function crown(id: string, r: number, flip: boolean): string {
   const lobes = flip
     ? [[0, 0, 1], [0.6, 0.04, 0.6], [-0.64, 0.14, 0.52], [0.32, -0.5, 0.55], [-0.42, -0.38, 0.6], [-0.05, -0.68, 0.44]]
     : [[0, 0, 1], [-0.62, 0.1, 0.56], [0.6, 0.06, 0.58], [-0.4, -0.42, 0.56], [0.36, -0.46, 0.54], [0, -0.62, 0.5]]
   return `<g id="${id}">${lobes.map(([x, y, k]) => `<circle cx="${r0(x * r)}" cy="${r0(y * r)}" r="${r0(k * r)}"/>`).join('')}</g>`
 }
-/** A tall narrow crown that stands above its row. */
 const tall = (id: string, r: number) =>
   `<g id="${id}"><ellipse cx="0" cy="${r0(-r)}" rx="${r0(r * 0.46)}" ry="${r0(r * 1.5)}"/><ellipse cx="${r0(r * 0.16)}" cy="${r0(-r * 0.5)}" rx="${r0(r * 0.42)}" ry="${r0(r * 0.9)}"/></g>`
 
 type Row = { uses: string; trunks: string; y0: number; y1: number }
-/** Rows of crowns from the ridge down to the shore, far to near, then a row of bushes on the bank. */
 function forest(): Row[] {
   const rows: Row[] = []
   for (let i = 0; i <= ROWS; i++) {
@@ -88,7 +75,6 @@ function forest(): Row[] {
   return rows
 }
 
-/** Short round-capped strokes scattered over a w x h tile that repeats without seams. One path per hue. */
 function dabTile(counts: number[], w: number, h: number, len: number, lean: number): string[] {
   return counts.map(n => {
     let d = ''
@@ -105,7 +91,6 @@ function dabTile(counts: number[], w: number, h: number, len: number, lean: numb
   })
 }
 
-/** Short horizontal strokes on the water, longer toward the viewer. */
 function ripples(n: number, x0: number, x1: number, y0: number): string {
   let d = ''
   for (let i = 0; i < n; i++) {
@@ -115,7 +100,6 @@ function ripples(n: number, x0: number, x1: number, y0: number): string {
   return d
 }
 
-/** Rings and a jumping fish that play when #id is clicked, centred on (x,y). */
 function splash(id: string, x: number, y: number, fish = true): string {
   const ring = (rx: number, delay: number) =>
     `<ellipse class="ring" cx="${x}" cy="${y}" rx="4" ry="1" opacity="0"><animate attributeName="rx" values="4;${rx}" dur="2.4s" begin="${id}.click+${delay}s"/><animate attributeName="ry" values="1;${r0(rx * 0.26)}" dur="2.4s" begin="${id}.click+${delay}s"/><animate attributeName="opacity" values="0;.9;0" keyTimes="0;.12;1" dur="2.4s" begin="${id}.click+${delay}s"/></ellipse>`
@@ -129,7 +113,6 @@ export function stippleLakeScene(activity: 'idle' | 'busy' = 'idle'): string {
   const rows = forest()
   const g = (i: number) => Math.min(i, ROWS - 1)
 
-  // per-row gradients, dab patterns and their colours in both schemes
   let grads = ''
   let cssL = ''
   let cssD = ''
@@ -151,7 +134,6 @@ export function stippleLakeScene(activity: 'idle' | 'busy' = 'idle'): string {
     masks += `<mask id="m${i}" maskUnits="userSpaceOnUse" x="-20" y="${r0(rows[i].y0 - 10)}" width="1640" height="${r0(rows[i].y1 - rows[i].y0 + 20)}"><g fill="url(#mg)">${rows[i].uses}</g></mask>`
   }
 
-  // the slope behind the crowns, so no sky shows through
   let back = `M-20 ${SHORE}`
   for (let x = -20; x <= 1620; x += 40) back += `L${x} ${r0(ridge(x) + 44)}`
   back += `L1620 ${SHORE}Z`
@@ -167,7 +149,6 @@ export function stippleLakeScene(activity: 'idle' | 'busy' = 'idle'): string {
   const [dA, dB, dC] = dabTile([560, 480, 150], 180, 180, 4.5, 1.4)
   const [wA, wB] = dabTile([64, 56], 240, 120, 14, 0.12)
 
-  // stars above the ridge (dark only)
   const star = ['', '']
   for (let i = 0; i < 90; i++) {
     const x = rnd() * 1600
@@ -179,7 +160,6 @@ export function stippleLakeScene(activity: 'idle' | 'busy' = 'idle'): string {
     .map(([x, y, rx, ry]) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`)
     .join('')
 
-  // wake: a V of foam flecks behind the stern, thinning with distance
   let foam = ''
   for (let i = 0; i < 120; i++) {
     const t = rnd() ** 1.25

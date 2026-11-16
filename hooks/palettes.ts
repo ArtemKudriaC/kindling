@@ -1,4 +1,3 @@
-// The makeColors argument of each look, minus its label.
 export const PALETTES: Record<string, any> = {
   "clay": {
     "roles": {

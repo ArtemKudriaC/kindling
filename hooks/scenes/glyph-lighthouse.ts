@@ -1,7 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Glyph lighthouse (Маяк): a lighthouse on a rock at the right edge, a sailing boat far left, rolling wave tiles.
-// Light: early morning, lamp off, gulls, low sun. Dark: night, lamp on, a beam of tiles sweeping the edge.
-// Everything is rasterized into shaded character tiles by ./glyph-kit.
 import type { Grid, Pt } from './glyph-kit'
 import { burst, D, ell, frame, grid, ground, hit, L, line, mat, move, on, poly, raster, rect, tiles, dust } from './glyph-kit'
 
@@ -25,7 +22,6 @@ function materials(): void {
   mat('su', { lo: '#e8702a', hi: '#ffcf78', ink: '#9a3a0c' }, { lo: '#e8702a', hi: '#ffcf78', ink: '#9a3a0c' })
 }
 
-// ---- lighthouse: 35 x 42 cells, light from the left ----
 const CX = 17.5
 const xl = (y: number) => CX - (4 + ((y - 10) / 20) * 2.3)
 const xr = (y: number) => CX + (4 + ((y - 10) / 20) * 2.3)
@@ -37,9 +33,9 @@ function lighthouse(): Grid {
   const wet = (x: number, _y: number, _s: number) => (x % 2 ? 0.84 : 0.6)
   const rk = (x: number, y: number, s: number) => {
     const v = s * (0.9 + 0.2 * hash(x * 3 + 1, y * 5 + 2)) * (1.1 - Math.max(0, y - 36) * 0.03)
-    return v < 0.4 ? 0.3 : v < 0.64 ? 0.55 : 0.85 // three tones only
+    return v < 0.4 ? 0.3 : v < 0.64 ? 0.55 : 0.85
   }
-  const X = (x: number) => 17.5 + (x - 17.5) * 0.8 // rock is 80% as wide
+  const X = (x: number) => 17.5 + (x - 17.5) * 0.8
   const E = (cx: number, cy: number, rx: number, ry: number, b: number) => ell(X(cx), cy, rx * 0.8, ry, { g: 2, b, rim: 0.4, ao: 2, fx: rk })
   const W = (pts: Pt[]) => line(pts.map(([x, y]): Pt => [X(x), y]), 1, { g: 5, fx: wet })
   return raster(35, 42, [
@@ -47,18 +43,15 @@ function lighthouse(): Grid {
     E(4.5, 38.8, 5, 4.4, 0.72), E(9, 41, 8, 3.4, 0.6), E(11.5, 35.2, 6, 4.4, 0.85), E(17, 33.6, 5.5, 3.8, 0.8),
     E(26.5, 36.5, 7.5, 5.2, 0.7), E(32, 38.6, 5, 4.6, 0.62), E(22, 40.5, 9, 3.4, 0.55),
     W([[2, 40.5], [8, 39.8], [11, 40.6]]), W([[10, 41.5], [16, 41], [21, 41.6]]), W([[24, 41], [29, 40.2], [34, 40.8]]),
-    // tower
     slice(10, 30.2, 0, 0.9),
     slice(13.5, 17.5, 1, 0.82),
     slice(22.5, 26.5, 1, 0.82),
     rect(16, 27.2, 3, 3.2, { g: 3, b: 0.5, rim: 0.3 }),
     rect(15.6, 18.7, 3.8, 3.1, { g: 3, b: 0.6 }),
     rect(16.3, 19.2, 2.4, 2.1, { g: 6, b: 1 }),
-    // gallery, railing
     poly([[11, 9], [24, 9], [22.5, 10.6], [12.5, 10.6]], { g: 3, b: 0.62, rim: 0.5, ao: 1 }),
     line([[11, 7.1], [24, 7.1]], 1, { g: 3, b: 0.6 }),
     ...[11.5, 13.5, 15.5, 19.5, 21.5, 23.5].map(x => line([[x, 7.1], [x, 9]], 0.9, { g: 3, b: 0.55 })),
-    // lantern room: glass, mullions, eave, dome, finial
     rect(14, 4.3, 7, 4.7, { g: 4, b: 0.8, cyl: 'x' }),
     line([[16.5, 4.3], [16.5, 9]], 1, { g: 3, b: 0.65 }),
     line([[18.5, 4.3], [18.5, 9]], 1, { g: 3, b: 0.65 }),
@@ -74,7 +67,6 @@ function lampOn(): Grid {
   return raster(35, 42, [rect(14, 4.3, 2, 4.7, { b: 1, fx }), rect(17, 4.3, 1, 4.7, { b: 1, fx }), rect(19, 4.3, 2, 4.7, { b: 1, fx })], { into: g, amb: 0.9 })
 }
 
-// ---- beam: a clean tapered wedge (3 rows narrowing to 1), brightness stepping down from the lamp. 14 x 14 cells ----
 const hash = (x: number, y: number) => (((x * 73856093) ^ (y * 19349663)) >>> 0) % 1000 / 1000
 function beam(cells: number): Grid {
   const G = grid(14, 14)
@@ -92,7 +84,6 @@ function beam(cells: number): Grid {
 }
 const beamFrames = (reach: number) => [0.2, 0.4, 0.6, 0.8, 1].map(l => beam(Math.max(2, Math.round(l * reach * 14)))).concat([beam(0)])
 
-// ---- boat: 16 x 13 cells, bow to the right; rot tilts it around the waterline ----
 function boat(rot: number, billow: number): Grid {
   const a = (rot * Math.PI) / 180, cs = Math.cos(a), sn = Math.sin(a)
   const R = (p: Pt): Pt => [8 + (p[0] - 8) * cs - (p[1] - 10.5) * sn, 10.5 + (p[0] - 8) * sn + (p[1] - 10.5) * cs]
@@ -117,12 +108,10 @@ function gull(wings: number): Grid {
   ], { light: LIGHT })
 }
 
-// ---- sun (light only): a half disc rising at the horizon ----
 function sun(): Grid {
   return raster(30, 12, [ell(15, 12, 14, 12, { b: 1 })], { light: [-0.35, -0.9], amb: 0.45, gain: 1.05 })
 }
 
-// ---- waves: ridge pattern periodic in x, rows of ~ - = ----
 function waves(w: number, rows: number, period: number, seed: number, amp: number): Grid {
   const G = grid(w, rows)
   for (let y = 0; y < rows; y++) for (let x = 0; x < w; x++) {
@@ -148,7 +137,6 @@ export function glyphLighthouseScene(state: 'idle' | 'busy'): string {
   const beamDark = tiles(beamFrames(1), { c: 12, x: bx, y: by, mats: ['bm'], dur: busy ? 7.8 : 26, delay: busy ? -1.8 : -6, seq: [5, 1, 2, 3, 4, 4, 4, 3, 2, 1, 5, 5], op: busy ? 1 : 0.8 })
   const beamLight = tiles(beamFrames(0.62), { c: 12, x: bx, y: by, mats: ['bm'], dur: 7.8, delay: -2.4, seq: [5, 0, 1, 2, 3, 3, 2, 1, 0, 5, 5], op: 0.85 })
 
-  // sea waves, two depth layers, rolling in whole-cell steps
   const sea = (x0: number, x1: number) => {
     const farP = 12, nearP = 10
     const far = move(tiles(waves(Math.ceil((x1 - x0) / 8) + farP, 7, farP, 1, busy ? 1.5 : 1), { c: 8, x: x0 - farP * 8, y: 880, mats: ['sl'], ramp: RAMP_SEA, shimmer: 6, seed: 5 }), { dx: farP * 8, c: 8, dur: busy ? 11 : 30 })
@@ -158,13 +146,11 @@ export function glyphLighthouseScene(state: 'idle' | 'busy'): string {
   const sl = sea(0, 480), sr = sea(1120, 1600)
   const clipL = 'url(#cl)', clipR = 'url(#cr)'
 
-  // boat on the mid layer
   const BX = 132, BY = 774
   const boatFrames = [boat(0, 0), boat(0, 0.7)]
   const boatTilt = boat(-13, 0.4)
   const boatInner = `<g>${on('boatHit', 'opacity', '0;1;0;1;0;1', 1.5, { discrete: true })}${tiles(boatFrames, { c: 12, x: BX, y: BY, mats: BOAT_MATS, dur: 3.2, shimmer: 2, seed: 9 })}</g>` +
     `<g opacity="0">${on('boatHit', 'opacity', '1;0;1;0;1;0', 1.5, { discrete: true })}${tiles(boatTilt, { c: 12, x: BX, y: BY, mats: BOAT_MATS })}</g>`
-  // wake trailing the boat (busy)
   const wakeG = (xs: number[]) => {
     const G = grid(15, 3)
     xs.forEach((x, i) => { G.s[2 * 15 + x] = 0.55 - i * 0.12 })
@@ -178,7 +164,6 @@ export function glyphLighthouseScene(state: 'idle' | 'busy'): string {
   const splash: [string, string, string][] = [['we3', 'wet3', '~'], ['sl3', 'slt3', '-'], ['we2', 'wet2', 'o'], ['sl3', 'slt3', '.'], ['we3', 'wet3', '=']]
   const boatFx = boatMove(burst('boatHit', { x: BX + 96, y: BY + 112, tiles: splash, c: 12, n: 20, r: 150, dur: 0.55, flash: '#bfe8f2', seed: 7 }) + hit('boatHit', BX - 8, BY - 4, 200, 170, '#e8fbff'))
 
-  // lighthouse effects
   const LX = OX + 17.5 * 12, LY = OY + 6.6 * 12
   const lampTiles: [string, string, string][] = [['lp3', 'lpt3', '*'], ['bm3', 'bmt3', '+'], ['lp2', 'lpt2', 'o'], ['bm3', 'bmt3', '#'], ['lp3', 'lpt3', '@']]
   const lhFx = `<g class="pl-lh"><g opacity="0"><circle cx="${LX}" cy="${LY}" r="80" fill="url(#lampG)"/>${on('lhHit', 'opacity', '0;1;0;1;0;1;0', 1.7)}</g>` +

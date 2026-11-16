@@ -1,7 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Garden of habits: a potted plant in the lower-left corner grows with the number of habits kept this week
-// (stage 0..7): seed, sprout, leaves, buds, full bloom with drifting petals. Seven small pebbles show the week.
-// Warm paper cream, sage greens, one blush. Pure string building, deterministic.
 
 const f = (n: number): string => (Math.round(n * 10) / 10).toString()
 
@@ -43,14 +40,12 @@ export function gardenScene(stageIn: number): string {
   let seed = 7
   const rnd = (): number => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296)
 
-  // ground specks and faint rings in the paper
   let paper = ''
   for (let i = 0; i < 46; i++) {
     const x = rnd() * 1600, y = rnd() * 1000, r = 1 + rnd() * 2.2
     paper += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="#B9A987" opacity="${f(0.1 + rnd() * 0.12)}"/>`
   }
 
-  // plant geometry (local coords: soil surface at y=0, growing up)
   const H = [0, 44, 74, 114, 142, 164, 178, 190][stage]
   const sx = (y: number): number => 9 * Math.sin(y / 80)
   let stem = ''
@@ -71,12 +66,10 @@ export function gardenScene(stageIn: number): string {
     const y2 = Math.max(10, y - 12)
     leaves += `<g transform="translate(${f(sx(y2))} ${f(-y2)})">${leaf(len * 0.94, -180 + up, i + 1, i * 0.7 + 1.3)}</g>`
   }
-  // fresh unfurling tip for stages 3-4
   let tip = ''
   if (stage === 3) tip = `<g transform="translate(${f(sx(H))} ${f(-H)})" opacity=".6"><g class="hd">${bud(8, 0)}</g></g>`
   if (stage === 4) tip = `<g transform="translate(${f(sx(H))} ${f(-H)})" opacity=".8"><g class="hd">${bud(11, 0)}</g></g>`
 
-  // heads: top plus branches
   let heads = ''
   const topX = sx(H), topY = -H
   const branch = (frac: number, dx: number, dy: number, kind: 'bud' | 'bloom', r: number, open: number, delay: number): string => {
@@ -103,12 +96,10 @@ export function gardenScene(stageIn: number): string {
     }
   }
 
-  // seed in soil for stage 0
   const seedMark = stage === 0
     ? `<g class="hd"><path d="M0 0Q-3 -14 3 -24" stroke="#7FA374" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/><g transform="translate(3 -24)">${leaf(12, -30, 0, 0)}${leaf(11, -150, 1, 1)}</g><ellipse cx="-16" cy="-1" rx="8" ry="5.5" fill="url(#sd)"/><path d="M-21 -2Q-16 -6 -11 -2" stroke="#7A5A34" stroke-width="1.2" fill="none" stroke-linecap="round"/></g>`
     : ''
 
-  // week dots under the pot
   let dots = ''
   for (let i = 0; i < 7; i++) {
     const on = i < stage

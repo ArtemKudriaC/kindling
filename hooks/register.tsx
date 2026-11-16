@@ -31,16 +31,13 @@ import { trainingScene } from './scenes/training'
 const PLUGIN = 'kindling'
 const COMMAND = 'look'
 const DEFAULT = 'koster' as const
-// How often an open chat checks whether another chat chose a different look.
 const FOLLOW_MS = 4000
 
 type Look = {
   title: string
   blurb: string
   glass: ThemeBackdropGlass
-  /** Redraws when Claude starts or stops working. */
   live?: boolean
-  /** Prints Claude Code's limit windows and cache share; redraws when a figure it shows changes. */
   meter?: boolean
   scene: (activity: Activity, state: LookState, now: Date, meter: Meter) => string
 }
@@ -205,7 +202,8 @@ const LOOKS = {
   },
   'ukiyo-e': {
     title: 'Укиё-э',
-    blurb: 'японская гравюра на дереве: красные ворота в заливе, сквозь них садится солнце, под ними рыбак в лодке; справа снежная гора над полосой тумана, сосна и каменный фонарь на скале, под ней разбивается волна; ночью луна, фонарь и огни лодок; пока Claude работает, поднимается ветер: туман идёт через ворота, рыбак бросает сеть, на лодке ставят парус, гребни и брызги; в картуше рядом с названием лимиты Claude: сколько процентов пятичасового (五時間) и недельного (七日) окна израсходовано, от 80 цифра красная; в круглой печати время, когда сбросится пятичасовое окно; в красной печати доля последнего хода, взятая из кэша',
+    blurb: 'японская гравюра на дереве: красные ворота в заливе, сквозь них садится солнце, под ними рыбак в лодке; справа снежная гора над полосой тумана, сосна и каменный фонарь на скале, под ней разбивается волна; ночью луна, фонарь и огни лодок; пока Claude работает, поднимается ветер: туман идёт через ворота, ' +
+      'рыбак бросает сеть, на лодке ставят парус, гребни и брызги; в картуше рядом с названием лимиты Claude: сколько процентов пятичасового (五時間) и недельного (七日) окна израсходовано, от 80 цифра красная; в круглой печати время, когда сбросится пятичасовое окно; в красной печати доля последнего хода, взятая из кэша',
     glass: { blur: 16, opacity: 0.62 },
     live: true,
     meter: true,
@@ -227,9 +225,6 @@ const colorsOf = (id: string) => {
   return { theme, unpainted }
 }
 
-// What the person should read: the colour kit's refusal, or the engine's reason when the theme does not stand.
-// A theme that stands with no client to draw it yet (a terminal chat, the app before its window attaches) is not a fault:
-// the engine keeps it under a request id and draws it when a client attaches.
 export const faultOf = (unpainted: string | undefined, set: ThemeResult): string | undefined =>
   unpainted ?? (set.isDrawn || set.requestId !== undefined ? undefined : set.reason)
 
@@ -260,8 +255,7 @@ async function setActivity($: EngineInterface, a: Activity): Promise<void> {
 
 const WINDOWS = { fiveHour: 'five_hour', sevenDay: 'seven_day' } as const
 
-/** A window past its reset reads 0 with no reset time: the next request opens a new one. */
-const settle = (m: Meter, now: number): Meter => {
+export const settle = (m: Meter, now: number): Meter => {
   const out = { ...m }
   for (const key of Object.keys(WINDOWS) as (keyof typeof WINDOWS)[]) {
     const at = m[key]?.resetsAt
@@ -272,7 +266,6 @@ const settle = (m: Meter, now: number): Meter => {
   return out
 }
 
-// Each write redraws a look that prints the meter, so only a change is written; `update` applies `fn` to the value as it stands.
 async function setMeter($: EngineInterface, fn: (m: Meter) => Meter): Promise<void> {
   const m = await read($, meter)
   if (JSON.stringify(fn(m)) !== JSON.stringify(m)) {
@@ -280,8 +273,6 @@ async function setMeter($: EngineInterface, fn: (m: Meter) => Meter): Promise<vo
   }
 }
 
-// No measurement comes while the chat is idle, so a timer at each reset `m` holds and `was` did not draws that window
-// spent. A reload keeps the meter and drops the timers, so session.start arms the stored resets again.
 function arm($: EngineInterface, m: Meter, was: Meter = {}): void {
   for (const key of Object.keys(WINDOWS) as (keyof typeof WINDOWS)[]) {
     const at = Date.parse(m[key]?.resetsAt ?? '')
@@ -291,7 +282,6 @@ function arm($: EngineInterface, m: Meter, was: Meter = {}): void {
   }
 }
 
-// The limit windows a measurement reports, as whole percents with their reset times.
 async function measure($: EngineInterface, rateLimits: readonly SessionRateLimit[]): Promise<void> {
   const limits: Meter = {}
   for (const [key, kind] of Object.entries(WINDOWS) as [keyof typeof WINDOWS, string][]) {
@@ -307,9 +297,6 @@ async function measure($: EngineInterface, rateLimits: readonly SessionRateLimit
 const stored = (saved: unknown): LookState | undefined =>
   saved !== null && typeof saved === 'object' && isLook((saved as LookState).look) ? (saved as LookState) : undefined
 
-// The look is the person's, not one chat's: a chat that is already open takes what another chat stored.
-// The store is read last and `/look` writes it first, so a check that lands in the middle of a `/look` never puts the old look back.
-// It never throws: a store that cannot be read now is read again at the next check, and the turn goes on.
 async function follow($: EngineInterface): Promise<void> {
   try {
     const now = await read($, state)
@@ -342,7 +329,6 @@ export const register: Register = on => {
 
   on('command.run', { command: COMMAND }, async ($, e) => {
     const words = e.args.trim().split(/\s+/).filter(Boolean)
-    // Catch up first: a chat that has not followed yet would write its old look back over the newer choice.
     await follow($)
     const now = await read($, state)
 
@@ -357,10 +343,11 @@ export const register: Register = on => {
       if (range === undefined || !Number.isFinite(value) || value < 0 || value > range) {
         return { text: 'Так: /look set recovery 0..100 или /look set garden 0..7' }
       }
-      const s = { ...now, [field]: Math.round(value) }
+      const n = Math.round(value) || 0
+      const s = { ...now, [field]: n }
       await $.store.set('state', s)
       await update($, state, () => s)
-      return { text: `${field} = ${Math.round(value)}.` }
+      return { text: `${field} = ${n}.` }
     }
 
     const id = (words[0] ?? "").toLowerCase()
@@ -376,7 +363,6 @@ export const register: Register = on => {
     return { text: `${LOOKS[id].title}: ${LOOKS[id].blurb}.${note}` }
   })
 
-  // A copy where nothing was chosen wears the default. The first time the app shows it, say once which look that is and how to change it.
   on('session.attach', { surface: 'desktop' }, async ($, e, next) => {
     const joined = await next(e)
     try {
@@ -385,7 +371,6 @@ export const register: Register = on => {
         $.ui.toast(`Тема «${LOOKS[DEFAULT].title}». Другие: /${COMMAND}`)
       }
     } catch {
-      // A store that cannot be read now must not stop the window from attaching.
     }
     return joined
   })
@@ -402,7 +387,6 @@ export const register: Register = on => {
     const done = await next(e)
     if (e.agentId === undefined) {
       await setActivity($, 'idle')
-      // the share of the turn's input the prompt cache served
       const u = e.usage
       const input = u === undefined ? 0 : u.input_tokens + u.cache_read_input_tokens + u.cache_creation_input_tokens
       if (u !== undefined && input > 0) {
@@ -412,7 +396,6 @@ export const register: Register = on => {
     return done
   })
 
-  // Claude Code's limit windows: after each turn, and whenever one moves a whole point.
   on('session.measure', async ($, e, next) => {
     const done = await next(e)
     await measure($, e.rateLimits)

@@ -1,8 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Home: an invented flat as a fine blueprint line drawing (top view), standing along the left edge.
-// A room whose light is on fills with a soft lamp-amber glow. A small Raspberry Pi board sits in the
-// bottom-right corner, its outline cool -> warm -> red with the CPU temperature (40 -> 55 -> 70 C).
-// Pure string building, deterministic.
 
 export const HOME_ROOMS: string[] = ['kitchen', 'living', 'bath', 'hall', 'bedroom']
 
@@ -24,7 +20,6 @@ const PARTS: [number, number, number, number, number][] = [
   [0,2.8,10.4,2.8,.08],[3.6,0,3.6,2.8,.08],[2.2,2.8,2.2,5.4,.08],[4.6,2.8,4.6,5.4,.08],
 ]
 const GAPS: number[][] = [[3,5.2,3.9,5.6],[2.05,3.5,2.35,4.3],[2.4,2.65,3.3,2.95],[3.75,2.65,4.5,2.95],[4.45,3.3,4.75,4.2]]
-// [x0,y0,x1,y1,kind] r rug, b bed, t tub, o other furniture
 const FURN: (number | string)[][] = [
   [.1,.1,3.5,.7,'o'],[.1,.7,.7,2,'o'],[1.6,1.3,2.9,2.1,'o'],
   [5,.15,7.4,1,'o'],[4.8,.9,7.8,2.4,'r'],[5.8,1.3,6.9,1.9,'o'],[9.9,.3,10.3,2.4,'o'],[8.2,.1,9.6,.7,'o'],
@@ -43,7 +38,7 @@ export function homeScene(state: { lights: Record<string, boolean>; piTemp?: num
   const lights = (state && state.lights) || {}
   const t = state ? state.piTemp : undefined
   const known = typeof t === 'number' && isFinite(t)
-  const S = 52, TX = 1449, TY = 87 // plan metres -> px, rotated 90 deg clockwise, left column, ~90% of height
+  const S = 52, TX = 1449, TY = 87
   const nOn = HOME_ROOMS.filter((k) => lights[k]).length
 
   const glows = Object.keys(ROOMS).filter((k) => lights[k]).map((k, i) => {
@@ -83,7 +78,6 @@ export function homeScene(state: { lights: Record<string, boolean>; piTemp?: num
     return `<g transform="translate(${r.label[0]} ${r.label[1]}) rotate(-90)"><rect x="-${(+w / 2).toFixed(2)}" y="-.25" width="${w}" height=".38" rx=".19" fill="#150e06" opacity=".62"/><text y=".03" text-anchor="middle" font-size=".24" font-weight="600" fill="#fff0d2">${r.name}</text></g>`
   }).join('')
 
-  // Pi readout
   const COOL = [104, 176, 232], WARM = [244, 184, 78], HOT = [236, 86, 72], NEUT = [128, 148, 178]
   const tc = !known ? NEUT : t! <= 55 ? mixc(COOL, WARM, smooth((t! - 40) / 15)) : mixc(WARM, HOT, smooth((t! - 55) / 15))
   const pc = hex(tc), pcl = hex(mixc(tc, [255, 255, 255], .45)), pcd = hex(mixc(tc, [14, 24, 44], .55))

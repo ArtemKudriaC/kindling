@@ -1,8 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Рукопись: an illuminated manuscript page. Light: parchment by day. Dark: vellum by candle.
-// Vine scrollwork along the left and top edges, a lapis-and-gold initial, gold glints that shimmer slowly,
-// and one Synodal verse a day, small, in the lower right corner. Pure string building, light and dark in one SVG.
-// The Synodal text's long dashes are written as commas here.
 
 const VERSES: [string, string][] = [
   ['Ибо так возлюбил Бог мир, что отдал Сына Своего Единородного, дабы всякий верующий в Него, не погиб, но имел жизнь вечную.', 'Ин 3:16'],
@@ -64,7 +60,6 @@ function wrap(text: string, max: number): string[] {
 
 const LEAF = 'M0 0 C6 -9 20 -11 30 0 C20 11 6 9 0 0Z'
 
-/** A vine strip in local coordinates: u runs along the edge, v across it. */
 function vine(len: number, amp: number): { art: string; glints: { u: number; v: number }[] } {
   const pts: [number, number][] = []
   for (let u = 0; u <= len; u += 6) pts.push([u, Math.sin(u / 62) * amp])

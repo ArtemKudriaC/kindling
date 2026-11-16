@@ -5,7 +5,6 @@ export function rasterIdeScene(state: 'idle' | 'busy'): string {
   const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296
   const f = (n: number) => +n.toFixed(1)
 
-  // Bayer 4x4 threshold cells: ordered dither fed into the quantizer (7px desktop, 5px phone)
   const B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5]
   const bayerN = (n: number, light = '#ffffff') => B.map((v, i) => {
     const t = (v + 0.5) / 16 - 0.5
@@ -14,11 +13,9 @@ export function rasterIdeScene(state: 'idle' | 'busy'): string {
   }).join('')
   const bayer = bayerN(7), bayer3 = bayerN(8)
 
-  // wide soft diagonal bands: the busy sweep (carries the dither), kept calm in the middle
   const bands = ([[-420, 110, '#ff9cc0', 0.5], [-130, 80, '#0c0422', 0.55], [150, 120, '#ffa860', 0.42], [430, 90, '#080320', 0.5]] as [number, number, string, number][])
     .map(([y, h, c, o]) => `<rect x="-1200" y="${y}" width="4000" height="${h}" fill="${c}" opacity="${o}"/>`).join('')
 
-  // ---------- pure raster click effects: invisible 110px cells at the edges, one shared pixel ripple per side ----------
   const COL = ['#fe2d84', '#fc801d', '#4a8cff', '#f4f6ff']
   type Cell = { id: string; cx: number; cy: number; k: number; ph: boolean }
   const side = (xs: number[], rows: number[], keep: (x: number, j: number) => boolean, n0: number): Cell[] => {
@@ -30,7 +27,6 @@ export function rasterIdeScene(state: 'idle' | 'busy'): string {
   const cellsL = side([0, 110, 220, 330], R9, x => x === 0, 0)
   const cellsR = side([1160, 1270, 1380, 1490], R9, x => x === 1490, 36)
   const cellsM = side([440, 550, 660, 770, 880, 990], [8], () => false, 72)
-  // solid pixel rings: 8px squares on an 8px grid, 3 cells (24px) thick, each with a darker 1px outline
   const RC = [['#fe2d84', '#8c1348', 110], ['#fc801d', '#9a4208', 155], ['#3574f0', '#162f8a', 200]] as [string, string, number][]
   const ringSyms = RC.map(([fill, line, r], i) => {
     let q = ''
@@ -69,7 +65,6 @@ export function rasterIdeScene(state: 'idle' | 'busy'): string {
   }
   const cellG = (g: string, cells: Cell[]) => `<g id="cells${g}">` + cells.map(c => `<g${c.ph ? ' class="ph"' : ''}><rect id="${c.id}" class="hit" x="${c.cx - 55}" y="${c.cy - 55}" width="110" height="110" fill="none" pointer-events="all"/><rect class="gl" x="${c.cx - 55}" y="${c.cy - 55}" width="110" height="110"/></g>`).join('') + '</g>'
 
-  // code-brace silhouettes: the lit hero object on each edge, drawn through the mosaic
   const GF = "Menlo, Consolas, 'DejaVu Sans Mono', monospace"
   const brace = (id: string, glyph: string, x: number, cells: Cell[], loc: (c: Cell) => number, clip: string) => {
     const gx = x - 230
@@ -131,9 +126,12 @@ ${ringSyms}${ptSym}
 <mask id="mbay"><rect width="1600" height="1000" fill="url(#gm)"/></mask>
 <mask id="msw"><rect width="1600" height="1000" fill="url(#gs)"/></mask>
 <filter id="nz" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000"><feTurbulence type="fractalNoise" baseFrequency=".17" numOctaves="1" seed="7"/><feColorMatrix values="1.2 0 0 0 -.1  1.2 0 0 0 -.1  1.2 0 0 0 -.1  0 0 0 0 1"/></filter>
-<filter id="q" filterUnits="userSpaceOnUse" x="0" y="0" width="1603" height="1001" color-interpolation-filters="sRGB"><feFlood x="3" y="3" width="1" height="1"/><feComposite width="7" height="7" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="3"/><feColorMatrix values="1 0 0 0 0  0 .84 0 0 0  0 0 1 0 0  0 0 0 1 0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncG type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncB type="discrete" tableValues="0.06 .22 .4 .56 .72 .88"/></feComponentTransfer></filter>
-<filter id="q2" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000" color-interpolation-filters="sRGB"><feFlood x="2" y="2" width="1" height="1"/><feComposite width="5" height="5" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="2"/><feColorMatrix values="1 0 0 0 0  0 .84 0 0 0  0 0 1 0 0  0 0 0 1 0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncG type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncB type="discrete" tableValues="0.06 .22 .4 .56 .72 .88"/></feComponentTransfer></filter>
-<filter id="q3" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000" color-interpolation-filters="sRGB"><feFlood x="4" y="4" width="1" height="1"/><feComposite width="8" height="8" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="4"/><feColorMatrix values="1 0 0 0 0  0 .84 0 0 0  0 0 1 0 0  0 0 0 1 0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncG type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncB type="discrete" tableValues="0.06 .22 .4 .56 .72 .88"/></feComponentTransfer></filter>
+<filter id="q" filterUnits="userSpaceOnUse" x="0" y="0" width="1603" height="1001" color-interpolation-filters="sRGB"><feFlood x="3" y="3" width="1" height="1"/><feComposite width="7" height="7" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="3"/>
+<feColorMatrix values="1 0 0 0 0  0 .84 0 0 0  0 0 1 0 0  0 0 0 1 0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncG type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncB type="discrete" tableValues="0.06 .22 .4 .56 .72 .88"/></feComponentTransfer></filter>
+<filter id="q2" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000" color-interpolation-filters="sRGB"><feFlood x="2" y="2" width="1" height="1"/><feComposite width="5" height="5" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="2"/>
+<feColorMatrix values="1 0 0 0 0  0 .84 0 0 0  0 0 1 0 0  0 0 0 1 0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncG type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncB type="discrete" tableValues="0.06 .22 .4 .56 .72 .88"/></feComponentTransfer></filter>
+<filter id="q3" filterUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1000" color-interpolation-filters="sRGB"><feFlood x="4" y="4" width="1" height="1"/><feComposite width="8" height="8" result="px"/><feTile in="px" result="tl"/><feComposite in="SourceGraphic" in2="tl" operator="in"/><feMorphology operator="dilate" radius="4"/>
+<feColorMatrix values="1 0 0 0 0  0 .84 0 0 0  0 0 1 0 0  0 0 0 1 0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncG type="discrete" tableValues="0.02 .2 .42 .64 .85 .98"/><feFuncB type="discrete" tableValues="0.06 .22 .4 .56 .72 .88"/></feComponentTransfer></filter>
 <filter id="sb" filterUnits="userSpaceOnUse" x="-400" y="-400" width="2400" height="1800"><feGaussianBlur stdDeviation="26"/></filter>
 </defs>
 <style>

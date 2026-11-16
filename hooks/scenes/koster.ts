@@ -1,11 +1,9 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Koster: a campfire at night, seen low, in the bottom-left corner. Only the fire changes between states.
-// Pure string building, seeded LCG, CSS animation only.
 
 type State = 'idle' | 'busy' | 'burst'
 
-const FX = 500 // fire centre x
-const FY = 870 // fire base y
+const FX = 500
+const FY = 870
 
 function lcg(seed: number) {
   let s = seed >>> 0
@@ -49,19 +47,15 @@ function flames(scale: number): string {
   const t = (x: number, w: number, h: number, c: string, dur: number, dl: number, fill: string) =>
     tongue(x * s, w * s, h * s, c, dur, dl, fill)
   return (
-    // outer, red-orange
     t(-44, 26, 120, 'a', 2.3, 0.4, 'url(#fOut)') +
     t(40, 24, 105, 'b', 2.7, 1.1, 'url(#fOut)') +
     t(-12, 34, 175, 'c', 3.1, 0.2, 'url(#fOut)') +
     t(16, 28, 150, 'a', 2.5, 1.6, 'url(#fOut)') +
-    // mid, accent
     t(-26, 22, 105, 'b', 1.9, 0.7, 'url(#fMid)') +
     t(26, 20, 92, 'c', 2.2, 0.1, 'url(#fMid)') +
     t(0, 26, 135, 'a', 2.0, 1.3, 'url(#fMid)') +
-    // inner, warning
     t(-8, 15, 82, 'c', 1.6, 0.5, 'url(#fIn)') +
     t(12, 13, 70, 'b', 1.8, 1.0, 'url(#fIn)') +
-    // core
     t(0, 9, 44, 'a', 1.4, 0.3, '#F6E7B4')
   )
 }

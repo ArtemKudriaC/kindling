@@ -1,6 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Glyph balloons (Шары): three hot-air balloons on three depth layers over rolling hills of shaded tiles.
-// Light: late morning, saturated gores, crisp sun side. Dark: night, envelopes dark and lit from within by the burner.
 import type { Grid, Pt } from './glyph-kit'
 import { burst, D, ell, frame, grid, ground, hit, L, line, mat, move, on, poly, raster, rect, tiles, dust } from './glyph-kit'
 
@@ -10,12 +8,10 @@ const hash = (x: number, y: number) => (((x * 73856093) ^ (y * 19349663)) >>> 0)
 const cl = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v))
 
 function materials(): void {
-  // balloon fabric: light is saturated, dark is a cold dim blue (the burner glow is a separate overlay)
   mat('cr', { lo: '#94201a', hi: '#ff9272', ink: '#470c07' }, { lo: '#0c1022', hi: '#3a2c4a', ink: '#c89aa8' })
   mat('cm', { lo: '#b87c70', hi: '#f8dcc2', ink: '#5a3438' }, { lo: '#0e1428', hi: '#46568a', ink: '#b4c4f0' })
   mat('mu', { lo: '#9a5a08', hi: '#ffd860', ink: '#442802' }, { lo: '#0e1024', hi: '#4a4a4c', ink: '#d8c890' })
   mat('tl', { lo: '#064a5c', hi: '#54d8c6', ink: '#04262c' }, { lo: '#081428', hi: '#245878', ink: '#98d8e8' })
-  // glow overlay (night): the same fabric colours lit from inside
   mat('gcr', { lo: '#7a2418', hi: '#ffb36e', ink: '#3a0c06' }, { lo: '#7a2418', hi: '#ffb36e', ink: '#3a0c06' })
   mat('gcm', { lo: '#a8643a', hi: '#fff2c4', ink: '#5a2c10' }, { lo: '#a8643a', hi: '#fff2c4', ink: '#5a2c10' })
   mat('gmu', { lo: '#c88a10', hi: '#fff6a0', ink: '#5a3004' }, { lo: '#c88a10', hi: '#fff6a0', ink: '#5a3004' })
@@ -26,7 +22,6 @@ function materials(): void {
   mat('bb', { lo: '#885828', hi: '#f2bc6c', ink: '#3a2008' }, { lo: '#3a2430', hi: '#dc9444', ink: '#fff0c0' })
   mat('bu', { lo: '#323c56', hi: '#98a8c8', ink: '#141a2c' }, { lo: '#2a3250', hi: '#98a8c8', ink: '#e4ecff' })
   mat('fl', { lo: '#d02a10', hi: '#ffc038', ink: '#6a1404' }, { lo: '#e04018', hi: '#fff2a8', ink: '#8a2008' })
-  // hills: near greens and fields, far haze
   mat('h1', { lo: '#3f7a52', hi: '#c6e08c', ink: '#163a24' }, { lo: '#071420', hi: '#2a4c58', ink: '#8ac0b0' })
   mat('h2', { lo: '#94823a', hi: '#f4da7c', ink: '#4a3a0c' }, { lo: '#0a1224', hi: '#3a4a52', ink: '#b8c0a0' })
   mat('f1', { lo: '#4a7290', hi: '#9cbcb2', ink: '#243f58' }, { lo: '#0a1432', hi: '#26406e', ink: '#7a98d0' })
@@ -41,7 +36,6 @@ function materials(): void {
   mat('bd', { lo: '#4a5a7a', hi: '#8a9ab8', ink: '#1c2840' }, { lo: '#4a5a7a', hi: '#8a9ab8', ink: '#1c2840' })
 }
 
-// ---- balloon sprite ----
 interface BSpec { W: number; H: number; cx: number; Hs: number; R: number; mouth: number; N: number; pat: number[]; band: [number, number, number] | null; sk: number; gap: number; bw: number; bh: number; ph: number }
 const SK = 4, RP = 5, BK = 6, BB = 7, BU = 8
 
@@ -73,7 +67,6 @@ function balloon(sp: BSpec) {
       G.s[i] = cl(s); G.g[i] = col; nz[i] = cz
     }
   }
-  // skirt
   for (let k = 0; k < sk; k++) for (let x = 0; x < W; x++) {
     const hw = mouth * (1 - 0.03 * k), dx = x + 0.5 - cx
     if (Math.abs(dx) > hw) continue
@@ -91,7 +84,6 @@ function balloon(sp: BSpec) {
     rect(cx - 1.5, by - 2, 3, 1, { g: BU, b: 0.9, cyl: 'x', rim: 0.45 }),
     rect(cx - 0.5, by - 1, 1, 1, { g: BU, b: 0.6 }),
   ], { light: LIGHT, into: G })
-  // inner glow (night): bright and wide at the mouth, fading up the envelope
   const glow = (k: number): Grid => {
     const O = grid(W, H)
     for (let y = 0; y < Hs + sk; y++) for (let x = 0; x < W; x++) {
@@ -108,7 +100,6 @@ function balloon(sp: BSpec) {
   return { G, glow, burnerRow: by - 2, by }
 }
 
-// flame frame: rises from (cx, row y0) upward
 function flame(W: number, H: number, cx: number, y0: number, h: number, wBase: number, ph: number): Grid {
   const G = grid(W, H)
   for (let k = 0; k < h; k++) {
@@ -125,7 +116,6 @@ function flame(W: number, H: number, cx: number, y0: number, h: number, wBase: n
   return G
 }
 
-// ---- hills, trees, barn ----
 function hillsGrid(c: number, x0: number, y0: number, w: number, h: number, ridge: (x: number) => number, seed: number): Grid {
   const G = grid(w, h), rr = (X: number) => (ridge(X) - y0) / c
   for (let x = 0; x < w; x++) {
@@ -157,7 +147,6 @@ function barn(): Grid {
   ], { light: LIGHT })
 }
 
-// ---- cloud, bird ----
 function cloud(w: number, h: number, bumps: [number, number, number, number][]): Grid {
   return raster(w, h, [...bumps.map(([x, y, rx, ry]) => ell(x, y, rx, ry, { b: 0.9, rim: 0.2 })), rect(1, h - 2.4, w - 2, 1.6, { b: 0.55 })], { light: [-0.5, -0.85], amb: 0.5 })
 }
@@ -173,7 +162,6 @@ const ENV_RAMP = '@%#*+=-: '
 const GLOWRAMP = ' .:-=+*#%@'
 const COL = ['cr', 'cm', 'mu', 'tl']
 
-// a few loose glyphs, clustered around the objects (never a sky-wide sprinkle)
 function specks(seed: number, spots: [number, number, number, number][], chars: string, cls: string, op: number): string {
   const rnd = (() => { let s = seed; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296 } })()
   const xs: number[] = [], ys: number[] = []; let t = ''
@@ -233,7 +221,6 @@ export function glyphBalloonsScene(state: 'idle' | 'busy'): string {
   const far = mk({ id: 'bFar', sp: FAR, c: 6, ox: 190, oy: 56, pal: [2, 3, 0, 1], delay: -1, shimmer: 2, blastH: 10, fl: busy ? fB(-3) : fI(-1), sc: 0.9, fop: 0.6, halo: 110, c2: 6, ringR: [100, 64],
     waves: busy ? [{ dx: 0, dy: -48, c: 6, dur: 12, alt: true, delay: -3 }, { dx: 12, c: 6, dur: 8, alt: true }, { dx: 0, dy: 6, c: 6, dur: 1.5, alt: true }] : [{ dx: 0, dy: 6, c: 6, dur: 2.8, alt: true, delay: -1.9 }] })
 
-  // hills end in a smooth ramp that reaches the bottom edge, never a vertical cut
   const ridge = (side: 'L' | 'R', y0: number, drop: number, span: number, a1: number, ph: number) => (x: number) => {
     const d = side === 'L' ? x : 1600 - x
     if (d >= span) return 2000

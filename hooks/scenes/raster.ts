@@ -5,7 +5,6 @@ export function rasterScene(state: 'idle' | 'busy'): string {
   const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296
   const f = (n: number) => +n.toFixed(1)
 
-  // Bayer 4x4 threshold cells (6px each): ordered dither fed into the quantizer
   const B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5]
   const bayer = B.map((v, i) => {
     const t = (v + 0.5) / 16 - 0.5
@@ -13,11 +12,9 @@ export function rasterScene(state: 'idle' | 'busy'): string {
     return `<rect x="${(i % 4) * 7}" y="${Math.floor(i / 4) * 7}" width="7" height="7" fill="${t > 0 ? '#ffffff' : '#000000'}" opacity="${a.toFixed(3)}"/>`
   }).join('')
 
-  // wide soft diagonal bands: the busy sweep (carries the dither)
   const bands = ([[-420, 110, '#f0f8a0', 0.8], [-130, 80, '#05202a', 0.75], [150, 120, '#d8f070', 0.7], [430, 90, '#041a24', 0.7]] as [number, number, string, number][])
     .map(([y, h, c, o]) => `<rect x="-1200" y="${y}" width="4000" height="${h}" fill="${c}" opacity="${o}"/>`).join('')
 
-  // tapered organic stem
   const bez = (p: number[][], t: number) => {
     const u = 1 - t
     return [0, 1].map(k => u * u * u * p[0][k] + 3 * u * u * t * p[1][k] + 3 * u * t * t * p[2][k] + t * t * t * p[3][k])
@@ -67,7 +64,6 @@ export function rasterScene(state: 'idle' | 'busy'): string {
     leaves += leaf(q[0], q[1], -70 - rnd() * 60, 1.1 + rnd() * 0.4)
   }
 
-  // soft out-of-focus foliage on the opposite edge for depth
   let bokeh = ''
   for (let i = 0; i < 6; i++) {
     bokeh += `<use href="#lf" fill="url(#l-dk)" opacity="${(0.55 + rnd() * 0.3).toFixed(2)}" transform="translate(${f(-30 + rnd() * 160)} ${f(520 + i * 80 + rnd() * 40)}) rotate(${f(-50 + rnd() * 100)}) scale(${(2 + rnd() * 1.6).toFixed(2)})"/>`

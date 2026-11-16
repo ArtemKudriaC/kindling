@@ -46,7 +46,7 @@ Build the whole body first, then call `frame()` last (it consumes and resets the
   brightens on hover. Keep it out of x 450..1150.
 - `burst(id,{x,y,tiles:[bgClass,fgClass,char][],c?:12,n?:20,r?:110,dur?:.9,ring?,delay?,flash?,seed?})`: on click of
   `#id`, n tiles fly out (scatter with gravity, or `ring` = evenly spaced expanding ring), optional `flash` colour glow.
-  Tiles are e.g. `['pl3','plt3','*']`. `delay` seconds, for a second ring.
+  Tiles are e.g. `['pl3','plt3','*']` and each flies for 0.85 to 1.15 times `dur`; the flash lasts 0.45 s. `delay` seconds, for a second ring.
 - `on(id,attr,values,dur,{keyTimes?,discrete?,delay?})`: an `<animate>` run on click; put it INSIDE the element it
   animates. `attr 'translate'` makes an `animateTransform` (values `"x y;x y"`). `discrete` = step values (pose swaps:
   hide the idle group `0;1;0;1`, show the pose group `1;0;1;0`).

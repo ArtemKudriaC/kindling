@@ -1,9 +1,7 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// glyph-kit: shared engine for the Glyph family of backdrops (objects built from shaded character tiles).
-// Pure TS, no imports, deterministic. API is documented in docs/GLYPH-KIT.md.
 
 export type Pt = [number, number]
-export interface Grid { w: number; h: number; s: Float32Array; g: Uint8Array } // s < 0 = empty cell
+export interface Grid { w: number; h: number; s: Float32Array; g: Uint8Array }
 
 const n1 = (v: number) => String(Math.round(v * 10) / 10)
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -13,11 +11,9 @@ export function lcg(seed: number): () => number {
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296 }
 }
 
-// ---- per-frame() registry (reset when frame() returns, so output is deterministic per call) ----
 let css: string[] = [], cssDark: string[] = [], defs: string[] = [], uid = 0, seen = new Set<string>()
 const once = (k: string, f: () => void) => { if (!seen.has(k)) { seen.add(k); f() } }
 
-// ---- colour ----
 export function mix(a: string, b: string, t: number): string {
   const p = (s: string) => [1, 3, 5].map(i => parseInt(s.slice(i, i + 2), 16))
   const A = p(a), B = p(b)
@@ -25,8 +21,6 @@ export function mix(a: string, b: string, t: number): string {
 }
 
 export interface Scheme { lo: string; hi: string; ink: string; k?: number }
-/** Register a material: 4 colour steps (0 shadow .. 3 highlight) for light and dark.
- *  Classes: `${id}${q}` (tile fill) and `${id}t${q}` (character fill). */
 export function mat(id: string, L: Scheme, D: Scheme): string {
   for (const [S, out] of [[L, css], [D, cssDark]] as [Scheme, string[]][]) {
     if (out === cssDark && JSON.stringify(L) === JSON.stringify(D)) continue
@@ -38,14 +32,13 @@ export function mat(id: string, L: Scheme, D: Scheme): string {
   return id
 }
 
-// ---- rasterizer ----
 export interface ShapeOpt {
-  b?: number // albedo 0..1 (default .7)
-  g?: number // colour group (index into tiles() mats)
-  rim?: number // rim light on the side away from the light, 0..1
-  ao?: number // ambient occlusion: darken earlier cells within this many cells of the shape
-  cyl?: 'x' | 'y' | [number, number] // polygon/rect: cylinder across x or y, or [axis, halfWidth] in cells
-  fx?: (x: number, y: number, s: number) => number // per-cell shade tweak (cell coordinates)
+  b?: number
+  g?: number
+  rim?: number
+  ao?: number
+  cyl?: 'x' | 'y' | [number, number]
+  fx?: (x: number, y: number, s: number) => number
 }
 export interface Shape { t: 'e' | 'p' | 'l'; d: number[]; w?: number; o: ShapeOpt }
 export const ell = (cx: number, cy: number, rx: number, ry: number, o: ShapeOpt = {}): Shape => ({ t: 'e', d: [cx, cy, rx, ry], o })
@@ -102,8 +95,6 @@ function coverage(sh: Shape): (x: number, y: number) => Nrm {
   }
 }
 
-/** Rasterize layered shapes (painter order) into a grid of shades. Light is [lx, ly] pointing TO the light
- *  (e.g. [-.7,-.5] = from upper left). */
 export function raster(w: number, h: number, shapes: Shape[], o: { light?: Pt; amb?: number; gain?: number; into?: Grid } = {}): Grid {
   const G = o.into ?? grid(w, h), amb = o.amb ?? 0.22, gain = o.gain ?? 1.2
   const lx0 = o.light?.[0] ?? -0.6, ly0 = o.light?.[1] ?? -0.6, lz0 = 0.7
@@ -141,17 +132,16 @@ export function raster(w: number, h: number, shapes: Shape[], o: { light?: Pt; a
   return G
 }
 
-// ---- tile renderer ----
 export interface TileOpt {
-  c: number // cell px (8 far, 12 mid, 16 near)
-  x: number; y: number // px origin of the grid
-  mats: string[] // material id per colour group
-  ramp?: string // darkest..lightest characters (default ' .:-=+*#%@'; a space draws the tile only)
-  dur?: number; delay?: number // pose frame loop seconds (whole loop) and start offset (negative = already running)
-  seq?: number[] // frame order per step, e.g. [0,1,2,1]; default 0..n-1
-  shimmer?: number // number of tiles that cross-fade to a neighbouring ramp character
+  c: number
+  x: number; y: number
+  mats: string[]
+  ramp?: string
+  dur?: number; delay?: number
+  seq?: number[]
+  shimmer?: number
   seed?: number
-  op?: number // group opacity
+  op?: number
 }
 
 function frameCss(seq: number[]): string {
@@ -180,8 +170,7 @@ export function tiles(fr: Grid | Grid[], o: TileOpt): string {
     if (keys[0][i] >= 0 && keys.every(k => k[i] === keys[0][i])) common.push(i)
     else F.forEach((_, f) => { if (keys[f][i] >= 0) only[f].push(i) })
   }
-  // shimmer picks (from the common cells)
-  const rnd = lcg(o.seed ?? 3), sh = new Map<number, number>() // cell -> alt char index
+  const rnd = lcg(o.seed ?? 3), sh = new Map<number, number>()
   const cand = common.filter(i => { const ci = (keys[0][i] >> 2) & 15; return ci >= 2 && ci <= R.length - 2 })
   for (let n = 0; n < (o.shimmer ?? 0) && cand.length; n++) {
     const i = cand.splice(Math.floor(rnd() * cand.length), 1)[0], ci = (keys[0][i] >> 2) & 15
@@ -220,7 +209,6 @@ export function tiles(fr: Grid | Grid[], o: TileOpt): string {
     return out
   }
   let body = layer(common, keys[0], sh)
-  // shimmering tiles: character A and B swap by steps(1) opacity, one pair per colour step
   const groups = new Map<number, number[]>()
   for (const i of sh.keys()) { const k = keys[0][i], gq = ((k >> 6) << 2) | (k & 3); (groups.get(gq) ?? groups.set(gq, []).get(gq)!).push(i) }
   once('sh', () => css.push('@keyframes shA{0%{opacity:1}55%{opacity:0}100%{opacity:0}}@keyframes shB{0%{opacity:0}55%{opacity:1}100%{opacity:1}}.shA{animation:shA 5s steps(1,end) infinite}.shB{animation:shB 5s steps(1,end) infinite}'))
@@ -239,9 +227,6 @@ export function tiles(fr: Grid | Grid[], o: TileOpt): string {
   return `<g font-size="${n1(fs)}"${o.op != null ? ` opacity="${o.op}"` : ''}${st}>${body}</g>`
 }
 
-// ---- motion ----
-/** Translate content by (dx,dy) in whole-cell jumps (steps), looping. dx,dy multiples of c. alt = ping-pong,
- *  fade = fade in/out at the ends (for a one-way crossing). Negative delay starts mid-cycle. */
 export function move(content: string, o: { dx: number; dy?: number; c: number; dur: number; delay?: number; alt?: boolean; fade?: boolean }): string {
   const id = 'mv' + uid++, dy = o.dy ?? 0
   const N = Math.max(1, Math.round(Math.max(Math.abs(o.dx), Math.abs(dy)) / o.c))
@@ -251,10 +236,8 @@ export function move(content: string, o: { dx: number; dy?: number; c: number; d
   return `<g class="${id}">${inner}</g>`
 }
 
-// ---- ground ----
 export interface Sky { sky: string[]; grid: string; dust: string; glows?: [number, number, number, string, number][] }
 
-/** Faint code-glyph dust: dim inside x 450..1150, slow twinkle at the edges. Colour comes from CSS fill on `cls`. */
 export function dust(o: { n: number; seed: number; cls: string; chars?: string; c?: number; edge?: number; mid?: number; y0?: number; y1?: number; zones?: [number, number, number, number][] }): string {
   const c = o.c ?? 16, ch = o.chars ?? '01{}();=<>/#:+*', rnd = lcg(o.seed), y0 = o.y0 ?? 0, y1 = o.y1 ?? 1000
   const edge: [string, number, number][][] = [[], [], []], midA: [string, number, number][] = []
@@ -269,7 +252,6 @@ export function dust(o: { n: number; seed: number; cls: string; chars?: string; 
   return `<g class="${o.cls}" font-size="${n1(c * 0.8)}">${edge.map((e, i) => t(e, o.edge ?? 0.5, 'dt' + i)).join('')}${t(midA, o.mid ?? 0.12)}</g>`
 }
 
-/** Graded backdrop for light (.L) and dark (.D): vertical gradient, soft glows, faint cell grid, dust. */
 export function ground(o: { L: Sky; D: Sky; c?: number; n?: number; seed?: number; chars?: string; zones?: [number, number, number, number][]; edge?: number; mid?: number; gridMask?: string }): string {
   const c = o.c ?? 16
   const one = (S: Sky, k: string) => {
@@ -286,12 +268,9 @@ export function ground(o: { L: Sky; D: Sky; c?: number; n?: number; seed?: numbe
   return `<g class="L">${one(o.L, 'L')}</g><g class="D">${one(o.D, 'D')}</g>` + dust({ n: o.n ?? 150, seed: o.seed ?? 11, cls: 'du', chars: o.chars, c, zones: o.zones, edge: o.edge, mid: o.mid })
 }
 
-/** Wrap content for one scheme only. */
 export const L = (s: string) => `<g class="L">${s}</g>`
 export const D = (s: string) => `<g class="D">${s}</g>`
 
-// ---- click / hover ----
-/** Invisible generous hit rect (paint LAST). With glow, an ellipse that brightens on hover follows it. */
 export function hit(id: string, x: number, y: number, w: number, h: number, glow?: string): string {
   const u = uid++
   if (glow) defs.push(`<radialGradient id="hg${u}"><stop offset="0" stop-color="${glow}"/><stop offset=".6" stop-color="${glow}" stop-opacity=".35"/><stop offset="1" stop-color="${glow}" stop-opacity="0"/></radialGradient>`)
@@ -299,14 +278,11 @@ export function hit(id: string, x: number, y: number, w: number, h: number, glow
     (glow ? `<ellipse class="hv" cx="${n1(x + w / 2)}" cy="${n1(y + h / 2)}" rx="${n1(w / 2)}" ry="${n1(h / 2)}" fill="url(#hg${u})"/>` : '')
 }
 
-/** SMIL animation that runs when #id is clicked. attr 'translate' makes an animateTransform. values use ';'. */
 export function on(id: string, attr: string, values: string, dur: number, o: { keyTimes?: string; discrete?: boolean; delay?: number } = {}): string {
   const a = `values="${values}" dur="${dur}s" begin="${id}.click${o.delay ? '+' + o.delay + 's' : ''}"${o.keyTimes ? ` keyTimes="${o.keyTimes}"` : ''}${o.discrete ? ' calcMode="discrete"' : ''}`
   return attr === 'translate' ? `<animateTransform attributeName="transform" type="translate" ${a}/>` : `<animate attributeName="${attr}" ${a}/>`
 }
 
-/** Click burst at (x,y): tiles fly out (scatter, or an expanding ring) within 50..450 ms, plus an optional flash.
- *  tiles = [bgClass, fgClass, char] variants (e.g. ['tw3','twt3','*']). Put it in the top layer before the hit rects. */
 export function burst(id: string, o: { x: number; y: number; tiles: [string, string, string, number?][]; c?: number; n?: number; r?: number; dur?: number; ring?: boolean; delay?: number; flash?: string; seed?: number; dim?: number }): string {
   const c = o.c ?? 12, n = o.n ?? 20, r = o.r ?? 110, dur = o.dur ?? 0.9, rnd = lcg(o.seed ?? 5)
   const gap = c >= 16 ? 2 : 1, sw = c >= 16 ? 3 : c >= 12 ? 2 : 1, sd = c - gap - sw, fs = c * 0.95, u = uid++
@@ -315,7 +291,6 @@ export function burst(id: string, o: { x: number; y: number; tiles: [string, str
     const k = tc ?? c, kg = k >= 16 ? 2 : 1, ks = k >= 16 ? 3 : k >= 12 ? 2 : 1, kd = k - kg - ks, kf = k * 0.95
     defs.push(`<g id="bt${u}_${i}"><rect class="tb ${bg}" x="${n1(-kd / 2)}" y="${n1(-kd / 2)}" width="${n1(kd)}" height="${n1(kd)}" stroke-width="${ks}" stroke-linejoin="round"/><text class="${fg}" y="${n1(kf * 0.33)}" font-size="${n1(kf)}">${esc(ch)}</text></g>`)
   })
-  // dim: the `dim` ring tiles nearest straight down are drawn at 40% (e.g. where they overlap the object)
   const dimSet = new Set(Array.from({ length: n }, (_, i) => i).sort((a, b) => Math.abs(a / n - 0.25) - Math.abs(b / n - 0.25)).slice(0, o.dim ?? 0))
   let p = ''
   for (let i = 0; i < n; i++) {
@@ -333,9 +308,6 @@ export function burst(id: string, o: { x: number; y: number; tiles: [string, str
   return `<g transform="translate(${n1(o.x)} ${n1(o.y)})">${fl}${p}</g>`
 }
 
-// ---- root ----
-/** Root <svg> with the shared style block. phone = CSS for @media (max-aspect-ratio:1/1), written only when given: the
- *  desktop app refuses that rule and then draws the scene with no motion. par = preserveAspectRatio. css/dark = extra rules. */
 export function frame(body: string, o: { css?: string; dark?: string; phone?: string; defs?: string; par?: string } = {}): string {
   const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="${o.par ?? 'xMidYMid slice'}" width="100%" height="100%">
 <defs>${o.defs ?? ''}${defs.join('')}</defs>

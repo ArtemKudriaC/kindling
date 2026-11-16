@@ -1,12 +1,5 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// «Осень»: a November night in flat gouache. A lone maple on a hill sheds its leaves by a lamp and a bench with a cat;
-// far off, a village and a lighthouse over a bay. Resting: leaves fall one by one. Working: the wind takes them.
-// Light and dark live in one SVG, switched by prefers-color-scheme. Pure string building.
-// The desktop app plays a scene only when it holds nothing off its lists (tests/looks.test.tsx, `playsInApp`): so no
-// feTurbulence grain, and no media rule on the window's shape. A narrow window keeps the left of the picture (xMinYMid),
-// the edge the app's sidebar is on: the lighthouse, its bay, the moon and the left lane of leaves stay.
 
-/** A seeded generator, so the scene draws the same picture every time. */
 const rng = (seed: number) => () => {
   seed = (seed * 1664525 + 1013904223) >>> 0
   return seed / 4294967296
@@ -14,23 +7,17 @@ const rng = (seed: number) => () => {
 const r0 = (n: number) => Math.round(n)
 let rnd = rng(31)
 
-// the foot of the tree, and the hill it stands on: a long slope to the left, a steep fall to the right
 const TX = 1370
 const TY = 646
 const CREST = TX + 10
-const LEFT = CREST - 1101 // where the long slope leaves the picture
+const LEFT = CREST - 1101
 const hillY = (x: number) => TY + (x < CREST ? 0.0003 : 0.006) * (x - CREST) ** 2
-// the far ridges
 const ridge2 = (x: number) => 700 + 5 * Math.sin(x / 170) + 3 * Math.sin(x / 61 + 1)
-// the moon, or the pale sun
 const MX = 320
-// The headland with the lighthouse is drawn at the left edge and moved right by HX: the desktop app's sidebar, when
-// open, covers the left 260 of the picture, and the chat column starts near 430 when it is closed.
 const HX = 226
 const MY = 160
 const ridge1 = (x: number) => 648 - (18 + 9 * Math.sin(x / 260 + 0.6) + 5 * Math.sin(x / 97)) * Math.min(1, (x - 440 - HX) / 220)
 
-/** One painted leaf: a pointed oval from (x,y), len long, bulging wid to each side. */
 function leaf(x: number, y: number, len: number, wid: number, ang: number): string {
   const dx = Math.cos(ang) * len
   const dy = Math.sin(ang) * len
@@ -39,7 +26,6 @@ function leaf(x: number, y: number, len: number, wid: number, ang: number): stri
   return `M${r0(x)} ${r0(y)}q${r0(dx / 2 + nx)} ${r0(dy / 2 + ny)} ${r0(dx)} ${r0(dy)}q${r0(-dx / 2 - nx)} ${r0(-dy / 2 - ny)} ${r0(-dx)} ${r0(-dy)}`
 }
 
-/** The crown, around the tree's foot: three groups that rock apart, four tones each, lit from the lamp side. */
 function crown(): string {
   const d = [0, 1, 2].map(() => ['', '', '', ''])
   for (let i = 0; i < 2000; i++) {
@@ -67,9 +53,6 @@ function crown(): string {
   return `<g class="u" filter="url(#b6)">${under}</g>${d.map((g, i) => `<g class="c${i}">${g.map((p, t) => `<path class="k${t}" d="${p}"/>`).join('')}</g>`).join('')}`
 }
 
-/** Leaves in the air. Two lanes stay clear of the chat column, one down each side of the picture. Resting, leaves come
- * down there one by one. Working, the wind tears them off the crown and carries them across. Each leaf also has a place
- * to hang (--bx, --by), for a client that draws the picture without motion. */
 function falling(busy: boolean): string {
   let out = ''
   let i = 0
@@ -85,14 +68,11 @@ function falling(busy: boolean): string {
         break
       }
     }
-    // A leaf whose way never crosses a side lane has nowhere to hang: it shows only while it falls.
     const still = p < 0 ? ((p = 0.5), 'opacity:0;') : ''
     out += `<g class="f${cls}" style="${still}--x:${r0(x)}px;--y:${r0(y)}px;--w:${r0(w)}px;--h:${r0(h)}px;--r:${r0(turn)}deg;--bx:${r0(x + w * p)}px;--by:${r0(y + h * p)}px;animation-duration:${dur.toFixed(1)}s;animation-delay:-${(rnd() * dur).toFixed(1)}s"><g class="sw" style="animation-delay:-${(rnd() * 3).toFixed(1)}s"><use href="#${i % 3 === 0 ? 'ml' : 'lf'}" class="l${i % 3}" transform="scale(${size.toFixed(2)})"/></g></g>`
     i++
   }
-  // the left lane: from above the picture down to the field and the water
   for (let k = 0; k < (busy ? 6 : 10); k++) one(150 + rnd() * 340, -40, -(20 + rnd() * 110), 780 + rnd() * 190, busy ? 4 + rnd() * 2.5 : 9 + rnd() * 7, 1.1 + rnd() * 0.8)
-  // the right lane: out of the crown, down to the hill
   for (let k = 0; k < (busy ? 7 : 11); k++) {
     const x = TX - 190 + rnd() * 400
     const y = TY - 500 + rnd() * 330
@@ -101,7 +81,6 @@ function falling(busy: boolean): string {
   }
   if (!busy) for (let k = 0; k < 4; k++) one(480 + rnd() * 640, 40 + rnd() * 300, -(40 + rnd() * 200), 300 + rnd() * 300, 11 + rnd() * 8, 0.9 + rnd() * 0.6)
   else {
-    // the wind: off the crown and across, gusts over the left side, and a few big ones close to the eye
     for (let k = 0; k < 22; k++) one(TX - 180 + rnd() * 380, TY - 510 + rnd() * 420, -(500 + rnd() * 1100), 80 + rnd() * 380, 3.6 + rnd() * 3.4, 0.8 + rnd() * 0.7)
     for (let k = 0; k < 14; k++) one(260 + rnd() * 560, 60 + rnd() * 560, -(340 + rnd() * 420), 140 + rnd() * 320, 3.2 + rnd() * 2.8, 0.9 + rnd() * 0.7)
     for (let k = 0; k < 3; k++) one(1500 + rnd() * 300, 560 + rnd() * 260, -2100, 40 + rnd() * 120, 4.5 + rnd() * 2.5, 2.1 + rnd() * 0.7, ' nf')
@@ -109,7 +88,6 @@ function falling(busy: boolean): string {
   return out
 }
 
-/** Leaves that drop out of the crown when #id is clicked (tree coordinates). */
 function flurry(id: string): string {
   let out = ''
   for (let i = 0; i < 12; i++) {
@@ -121,7 +99,6 @@ function flurry(id: string): string {
   return out
 }
 
-/** Out-of-focus leaves close to the eye, fanning from a bottom corner. */
 function sprig(x: number, y: number, side: number, n: number): string {
   let stems = ''
   let leaves = ''
@@ -144,7 +121,6 @@ export function gouacheAutumnScene(activity: 'idle' | 'busy' = 'idle'): string {
   rnd = rng(31)
   const busy = activity === 'busy'
 
-  // sky: stars of three sizes, a few that twinkle, a few four-pointed ones
   const dots = ['', '', '']
   let sparks = ''
   let twinkle = ''
@@ -157,7 +133,6 @@ export function gouacheAutumnScene(activity: 'idle' | 'busy' = 'idle'): string {
     else dots[k < 0.55 ? 0 : k < 0.88 ? 1 : 2] += `M${x} ${y}h0`
   }
 
-  // far land, across the bay from the headland
   let r1 = `M${356 + HX} 654Q${410 + HX} 651 ${440 + HX} 648`
   for (let x = 440 + HX; x <= 2300; x += 40) r1 += `L${x} ${r0(ridge1(x))}`
   r1 += `V666H${480 + HX}Q${410 + HX} 664 ${356 + HX} 654Z`
@@ -182,8 +157,6 @@ export function gouacheAutumnScene(activity: 'idle' | 'busy' = 'idle'): string {
     house(590 + HX, on2(590 + HX), 14, 11, false) + bush(612 + HX, on2(612 + HX) - 6, 8) + house(620 + HX, on2(620 + HX), 18, 13, true) + fir(646 + HX, on2(646 + HX), 20) + house(654 + HX, on2(654 + HX), 16, 11, true) + bush(678 + HX, on2(678 + HX) - 4, 6)
   const hamlet = `<path class="r2" d="M1430 716C1466 699 1560 697 1640 702V730H1430Z"/>${fir(1474, 702, 26)}${house(1486, 701, 20, 14, true)}${bush(1514, 696, 8)}${house(1522, 700, 16, 12, true)}${fir(1548, 701, 32)}${house(1558, 701, 22, 15, true)}${bush(1590, 696, 7)}`
 
-  // the lighthouse on its cliff, drawn with the foot of the tower at (0,0): the keeper's house, the tower with its
-  // door, windows, red band, gallery, lamp room and cap, and at night the lamp and its two beams
   const cottage = `<path class="hw" d="M-92 1v-22h40v22z"/><path class="hr" d="M-96 -21l9 -15h30l9 15z"/><path class="lk" d="M-64 -35v-10h6v10z"/><path class="hw" d="M-52 1v-14h20v14z"/><path class="hr" d="M-54 -13l5 -8h16l5 8z"/>
 <circle class="wh D" cx="-82" cy="-11" r="12"/><circle class="wh D" cx="-67" cy="-11" r="12"/>
 <path class="wn" d="M-85 -15h6v8h-6zM-70 -15h6v8h-6zM-45 -9h5v5h-5z"/><path class="lk" d="M-60 -11h5v12h-5z"/>
@@ -209,7 +182,6 @@ ${cottage}
 <circle class="lk" cx="0" cy="-172" r="2.4"/><path class="lks" d="M0 -174v-12M-6 -182h12M6 -182l-3 -2.4M6 -182l-3 2.4" fill="none" stroke-width="1.2" stroke-linecap="round"/>
 <rect class="hit" id="lh" x="-30" y="-190" width="60" height="194"/></g>`
 
-  // the cliff under it: a grass top, a rock face to the sea in two tones, ledges, rocks and surf at its foot
   const topY = (x: number) => (x < 60 ? 592 + (60 - x) * 0.016 : x < 180 ? 592 - (x - 60) * 0.033 : 588 + (x - 180) * 0.15)
   let brow = ''
   for (let i = 0; i < 46; i++) {
@@ -224,7 +196,6 @@ ${cottage}
 <g class="sf" fill="none" stroke-linecap="round" stroke-width="2.4"><path class="w1" d="M262 756q9 -5 18 0t18 0M318 760q8 -4 16 0M334 758q10 -5 20 0t16 0"/><path class="w2" d="M370 774q8 -4 16 0t14 0M236 782q10 -5 20 0t18 0M300 768q7 -3 14 0"/></g>
 <path class="D w2" d="M262 700h9M256 712h15M266 724h12M252 736h18M262 748h10M246 762h16M258 776h11" fill="none" stroke="#ffd58a" stroke-width="1.8" stroke-linecap="round"/>`
 
-  // the near ground on the left: a footpath down from the keeper's house, fence posts beside it, tall grass in the wind
   const post = (x: number, y: number, h: number, w: number) => `M${x - w / 2} ${y}v${-h}l${w / 2} ${-w * 0.5}l${w / 2} ${w * 0.5}v${h}z`
   const fence = `<path class="fp" d="${post(206, 986, 78, 9)}${post(212, 906, 60, 7.6)}${post(196, 843, 46, 6)}${post(160, 797, 34, 5)}${post(112, 759, 26, 4)}${post(74, 723, 20, 3.4)}"/>
 <path class="fr" d="M206 928Q213 896 212 862Q207 830 196 810Q180 784 160 773Q136 757 112 741Q92 726 74 709M206 952Q213 920 212 884Q207 850 196 826Q180 798 160 784Q136 768 112 750Q92 734 74 715" fill="none" stroke-width="2.2" stroke-linecap="round"/>`
@@ -249,7 +220,6 @@ ${cottage}
 <path class="fa" d="${strewn[0]}"/><path class="fb" d="${strewn[1]}"/>
 ${fence}`
 
-  // the hill: grass strokes that lean with the wind, tufts on the crest, leaves that already fell
   const grass = ['', '']
   for (let i = 0; i < 210; i++) {
     const x = LEFT + 20 + rnd() * (CREST + 230 - LEFT)
@@ -276,7 +246,6 @@ ${fence}`
     fallen[i % 3 === 0 ? 1 : 0] += leaf(x, y, (7 + rnd() * 8) * near, (2.6 + rnd() * 2.4) * near, (rnd() - 0.5) * 1.1 + (rnd() < 0.5 ? 0 : Math.PI))
   }
 
-  // the tree, around its foot
   const limbs: [string, number][] = [
     ['M-9 -180C-50 -215 -105 -225 -160 -262', 9], ['M9 -165C50 -200 100 -218 150 -246', 8.5],
     ['M-8 -245C-42 -295 -92 -328 -138 -378', 7], ['M8 -232C42 -285 84 -318 132 -356', 7],
@@ -294,14 +263,12 @@ ${crown()}
 <path class="g2" d="M-30 8l-5 -12M-20 9l-2 -14M24 9l4 -13M34 8l6 -10M-40 8l-8 -9" fill="none" stroke-width="2" stroke-linecap="round"/>
 ${flurry('cr')}<rect class="hit" id="cr" x="-205" y="-535" width="410" height="440"/>`
 
-  // the lamp, around its foot
   const lamp = `<g transform="translate(-185 11)">
 <g class="glo"><circle class="glw" cx="0" cy="-186" r="150"/><animate attributeName="opacity" values="1;.1;1;.25;1;.08;.08;1" dur="2.2s" begin="lm.click"/></g>
 <path class="post" d="M-10 0h20l-4 -11h-12zM-3.2 -11h6.4v-158h-6.4zM-6 -62h12v5h-12zM-11 -172h22v4h-22zM-17 -201h34l-8 -9h-18z"/><circle class="post" cx="0" cy="-213" r="3.4"/>
 <path class="glass" d="M-9 -172L-13 -201H13L9 -172Z"/>
 <rect class="hit" id="lm" x="-30" y="-222" width="60" height="226"/></g>`
 
-  // the bench and the cat, around the middle of the bench's feet
   const cat = busy
     ? `<path class="cat" d="M15 -20C12 -36 18 -47 27 -48C36 -47 42 -36 40 -20Z"/><g class="ch"><circle class="cat" cx="26" cy="-53" r="7.2"/><path class="cat" d="M20 -57l-1 -9l7 5zM28 -60l5 -6l1 9z"/></g><path class="cs tl" d="M39 -23c10 1 16 -5 14 -15" fill="none" stroke-width="3.6" stroke-linecap="round"/><path class="rm" d="M17 -30C15 -39 20 -46 26 -47M19 -55a7.2 7.2 0 0 1 5 -5" fill="none" stroke-width="1.3" stroke-linecap="round"/>`
     : `<g class="zz"><ellipse class="cat" cx="27" cy="-28" rx="18" ry="9"/></g><circle class="cat" cx="10" cy="-31" r="6.8"/><path class="cat" d="M4 -35l-1 -8l7 4zM12 -37l4 -7l2 8z"/><path class="cs" d="M44 -26c7 3 4 9 -7 8" fill="none" stroke-width="3.6" stroke-linecap="round"/><path class="rm" d="M4 -30q-1 -7 6 -8M13 -36q13 -4 25 1" fill="none" stroke-width="1.3" stroke-linecap="round"/>`

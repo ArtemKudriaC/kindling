@@ -1,20 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// «Укиё-э»: an evening bay as an Edo woodblock print. Flat colour inside key-block lines that swell and taper like a
-// cut line, graded colour (bokashi) at the top of the sky, at the horizon and along the lower edge of the mist, wood
-// grain and paper fibres. Composed as two tall panels beside the chat, like pillar prints: on the left a vermilion gate
-// stands in the water and the sun sets between its pillars, a fisherman sits in a skiff below it, the title cartouche
-// and seal hang in the corner; on the right a snow mountain rises out of a band of mist, an old pine leans from a
-// faceted rock beside a stone lantern, a boat lies off the headland and a wave breaks below the rock. Under the chat
-// only calm sea, a low island and sky.
-// Night: the moon over the mountain, the lantern and the boat lamps lit. Resting: nearly still, the sail furled.
-// Working: the wind rises: mist drifts across the gate and the sun, the fisherman casts his net, the sail is set, more
-// crests break and throw spray, the boats pitch, the pine sways, the reflection runs longer and shimmers.
-// Light and dark live in one SVG, switched by prefers-color-scheme. Pure string building, nothing off the app's lists.
-// A narrow window keeps the left (xMinYMid): the gate, the sun and the cartouche.
-// Claude's own figures are printed as an Edo print carries text (the meter, none until Claude Code has a reading): a
-// second cartouche beside the title holds the limit windows, each name read down the column (五時間 five hours, 七日
-// seven days) and its percent set across it, vermilion from 80; a round seal under it holds the time the five-hour
-// window resets; the red seal holds how much of the last turn's input the prompt cache served.
 import type { Limit, Meter } from '../../types'
 import { curve, limb } from './sakura'
 
@@ -26,7 +10,6 @@ const rng = (seed: number) => () => {
 const r0 = (n: number) => Math.round(n)
 let rnd = rng(23)
 const pts = (p: Pt[]) => p.map(([x, y]) => `${r0(x)} ${r0(y)}`).join('L')
-/** Points along a cubic curve from a to d. */
 const cub = (a: Pt, b: Pt, c: Pt, d: Pt, n: number): Pt[] =>
   Array.from({ length: n + 1 }, (_, i) => {
     const t = i / n
@@ -36,10 +19,7 @@ const cub = (a: Pt, b: Pt, c: Pt, d: Pt, n: number): Pt[] =>
   })
 
 const HZ = 600
-// the gate stands in the strip both layouts leave clear on the left (x 260 to 430); the sun sets between its pillars
 const GX = 345
-// the pine's root and the lantern's foot on the rock, the moon, all in the strip on the right (x 1282 to 1600), and
-// left of x 1540, which a window narrower than 16:10 still shows
 const PX = 1520
 const PY = 712
 const LX = 1440
@@ -47,17 +27,12 @@ const LY = 734
 const MX = 1380
 const MY = 170
 
-/** The gate in picture coordinates, absolute points only: two pillars that spread a little toward the water, the tie
- * beam through them, the beam under the top, the dark top beam with its ends turned up, the tablet, dark bands at the
- * feet. */
 const GATE =
   `<path class="gt" d="M286 462L302 462L300 770L280 770Z"/><path class="gt" d="M388 462L404 462L410 770L390 770Z"/>` +
   `<path class="gt" d="M268 498L422 498L422 511L268 511Z"/><path class="gt" d="M272 446Q345 466 418 446L418 457Q345 476 272 457Z"/>` +
   `<path class="gk" d="M261 431Q345 455 429 431L427 444Q345 468 263 444Z"/><path class="gk" d="M334 466L356 466L356 496L334 496Z"/>` +
   `<path class="gk" d="M279 742L301 742L301 770L279 770Z"/><path class="gk" d="M389 742L411 742L411 770L389 770Z"/>`
 
-/** A breaking wave, its foot at 0 0: a small swell behind, the body rising to a heavy lip that hooks forward over its
- * own hollow, a foam crown along its back that ends in claws hanging off the lip, flow lines in the water, flecks. */
 const CREST =
   `<path class="cb" d="M-60 0C-54 -10 -44 -16 -34 -16C-24 -16 -18 -10 -12 0Z"/>` +
   `<path class="cb" d="M-44 0C-38 -24 -22 -46 0 -60C18 -70 44 -74 60 -64C66 -58 68 -48 64 -40C58 -46 50 -48 42 -44C32 -38 28 -26 36 -12C40 -6 46 -2 52 0Z"/>` +
@@ -65,16 +40,11 @@ const CREST =
   `<path class="cf" d="M-26 -34C-12 -52 8 -64 28 -68C44 -71 60 -66 64 -52L66 -44L61 -47L62 -38L57 -42L56 -33L52 -39L50 -31L47 -38L44 -32L43 -42C40 -50 30 -60 14 -58C0 -56 -12 -46 -26 -34Z"/>` +
   `<path class="cd" d="M54 -26h0M48 -20h0M60 -30h0M42 -14h0M62 -18h0M56 -12h0M66 -24h0"/>`
 
-/** A boat, its waterline at 0 0: a low hull with its bow raised and a man in a hat at the stern. */
 const BOAT =
   `<path class="hl" d="M-60 -12Q-58 -2 -44 2L40 2Q54 0 62 -16L56 -14Q50 -8 38 -8L-48 -8Q-56 -8 -60 -12Z"/>` +
   `<path class="fg" d="M-46 -8L-42 -24L-36 -24L-32 -8Z"/><path class="ht" d="M-47 -23L-39 -31L-31 -23Z"/>`
-// the sailing boat: at rest its mast lies along the gunwale with the sail stowed on it; while the wind blows the mast
-// is stepped and the sail set and full
 const FURL = `<path class="ms" d="M-36 -12L42 -15"/><path class="sl" d="M-24 -11L32 -13L31 -20L-23 -18Z"/>`
 const SAIL = `<path class="ms" d="M0 -8L0 -80M-26 -76L26 -76"/><path class="sl" d="M-24 -76Q-18 -48 -26 -20L26 -20Q38 -48 24 -76Z"/><path class="sb" d="M-8 -76Q-3 -48 -9 -20M8 -76Q17 -48 9 -20"/>`
-// the fisherman's net: gathered on his arm at rest; while the wind blows he casts it and it opens over the water, a
-// ring of weights along its rim
 const ARM = `<path class="am" d="M-37 -20L-27 -31"/>`
 const HELD = `<path class="nf" d="M-28 -31L-21 -12L-31 -14Z"/>`
 const RIM = 'M-14 -50A52 17 -12 1 0 88 -72A52 17 -12 1 0 -14 -50Z'
@@ -88,20 +58,16 @@ for (let i = 0; i <= 12; i++) {
 }
 const CAST = `<g class="nt"><path class="nl" d="M-27 -31Q-24 -50 -12 -56"/><g clip-path="url(#ukn)"><path class="nm" d="${MESH}"/></g><path class="nl" d="${RIM}"/><path class="nw" d="${WEIGHTS}"/></g>`
 
-/** The stone lantern, its foot at 0 0: base, shaft, platform, the light box with its window, the roof, the jewel. */
 const LANTERN =
   `<path class="ls" d="M-22 0L22 0L18 -10L-18 -10Z"/><path class="ls" d="M-6 -10L6 -10L5 -44L-5 -44Z"/>` +
   `<path class="ls" d="M-16 -44L16 -44L12 -53L-12 -53Z"/><path class="ls" d="M-12 -53L12 -53L12 -73L-12 -73Z"/>` +
   `<path class="L wn" d="M-6 -57L6 -57L6 -69L-6 -69Z"/><path class="D lw" d="M-6 -57L6 -57L6 -69L-6 -69Z"/>` +
   `<path class="ls" d="M-30 -71Q-18 -75 -10 -86L10 -86Q18 -75 30 -71Q0 -77 -30 -71Z"/><path class="ls" d="M-4 -86Q-7 -93 0 -99Q7 -93 4 -86Z"/>`
 
-// the headland under the pine: angular faces, the shaded ones hatched; its foot well above the wave that breaks below
 const ROCK = 'M1650 690L1606 682L1576 692L1548 688L1520 704L1490 708L1462 726L1436 732L1412 756L1396 790L1386 816L1390 840L1408 856L1446 864L1504 868L1572 866L1650 862Z'
 const SHADE = 'M1462 726L1436 732L1412 756L1396 790L1386 816L1390 840L1408 856L1446 864L1462 836L1452 806L1466 776L1454 748ZM1576 692L1590 730L1578 770L1602 806L1650 816L1650 690L1606 682Z'
 const FACETS = 'M1462 726L1454 748L1466 776L1452 806L1462 836L1446 864M1520 704L1510 744L1524 782L1510 824L1520 866M1576 692L1590 730L1578 770L1602 806L1650 816M1490 708L1484 734L1496 760'
 
-// the mountain on the right: a volcano's cone with a notched summit and concave flanks, narrow enough that all of it
-// that shows stands in the strip; its foot sinks into the band of mist; the snow ends in tongues down the gullies
 const FL = cub([1308, 508], [1364, 488], [1424, 444], [1458, 378], 14)
 const FR = cub([1484, 378], [1522, 444], [1584, 490], [1664, 510], 14)
 const PEAK: Pt[] = [[1464, 373], [1471, 377], [1478, 372]]
@@ -120,8 +86,6 @@ const RIDGES = TONGUES.filter((_, k) => k % 2 === 0)
   .map(([x, y]) => `M${r0(x)} ${r0(y + 5)}L${r0(x + (x - 1471) * 0.22)} ${r0(y + 40)}`)
   .join('')
 
-/** A band of mist as printed: a flat tier with slanted ends, a shorter one stacked on top and one hung below, graded
- * toward its lower edge. */
 const tier = (a: number, b: number, t: number, s: number, up: boolean) => {
   const k = r0(s * 1.5)
   return up ? `M${a} ${t + s}L${a + k} ${t}L${b - k} ${t}L${b} ${t + s}Z` : `M${a} ${t}L${b} ${t}L${b - k} ${t + s}L${a + k} ${t + s}Z`
@@ -135,8 +99,6 @@ const mist = (x0: number, x1: number, y: number, h: number) => {
   )
 }
 
-/** Reflected light on the water under (cx, HZ): broken strokes, narrower toward the eye; the wind draws it longer. Its
- * own generator, so the rest of the print is the same at rest and at work. */
 const streaks = (cx: number, w: number, busy: boolean) => {
   const r = rng(cx)
   const rows = [[607, 0.95], [616, 0.8], [627, 0.66], [640, 0.74], [655, 0.5], [672, 0.38], [692, 0.28], [715, 0.22]]
@@ -150,8 +112,6 @@ const streaks = (cx: number, w: number, busy: boolean) => {
     .join('')
 }
 
-/** The sea's grain: rows of short arcs, longer and further apart toward the eye; the two classes drift against each
- * other while the wind blows. */
 function waves(): string {
   let out = ''
   ;[610, 619, 630, 643, 658, 675, 694, 715, 738, 763, 790, 819, 850, 883, 918, 955, 994].forEach((y, i) => {
@@ -164,9 +124,6 @@ function waves(): string {
   return out
 }
 
-/** The pine, its root at 0 0 on the rock: a trunk that leans out over the water and droops at its end, short branches
- * up and to the side, flat pads of needles, each dark below and lighter on top with a fan of needle strokes. Absolute
- * points only. */
 function pine(): string {
   const trunk = curve([[0, 0], [-8, -42], [-24, -72], [-50, -96], [-80, -112], [-116, -122], [-150, -128], [-180, -124], [-210, -112]], 8)
   const limbs: [Pt[], number, number][] = [
@@ -179,7 +136,6 @@ function pine(): string {
   for (const [p, w0, w1] of limbs) wood += limb(curve(p, 6), w0, w1)
   let bark = ''
   for (const o of [-8, 0, 7]) bark += 'M' + trunk.slice(0, 44).filter((_, k) => k % 3 === 0).map(([x, y], k) => `${r0(x)} ${r0(y + o * (1 - k / 18))}`).join('L')
-  // pads: [x, y, half width, height]
   const pads = [[-196, -122, 38, 20], [-150, -142, 44, 22], [-92, -128, 38, 18], [0, -186, 50, 24], [-52, -166, 34, 16], [40, -154, 30, 15]]
   let dark = ''
   let light = ''
@@ -189,7 +145,6 @@ function pine(): string {
     for (let k = 0; k < 6; k++) dark += `Q${r0(cx + w - ((2 * k + 1) * w) / 6)} ${r0(cy + h * (0.26 + 0.12 * ((k * 7) % 3)))} ${r0(cx + w - ((k + 1) * w) / 3)} ${cy}`
     dark += 'Z'
     light += `M${r0(cx - w * 0.8)} ${r0(cy - h * 0.42)}C${r0(cx - w * 0.72)} ${r0(cy - h * 0.94)} ${r0(cx + w * 0.72)} ${r0(cy - h * 0.94)} ${r0(cx + w * 0.8)} ${r0(cy - h * 0.42)}Q${cx} ${r0(cy - h * 0.56)} ${r0(cx - w * 0.8)} ${r0(cy - h * 0.42)}Z`
-    // needles: a dense fan of short strokes from the pad's heart to its rim
     const n = Math.round(w / 2.6)
     for (let i = 0; i <= n; i++) {
       const x = cx - w * 0.86 + (i * 1.72 * w) / n
@@ -206,8 +161,6 @@ const hhmm = (iso: string) => {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
-/** The limits cartouche right of the title (x 310 to 354) and the round reset seal under it, or nothing with no
- * reading. Each window gets the same cell: its name down the column, a fixed gap, the figure across it with ％. */
 function limits({ fiveHour, sevenDay }: Meter): string {
   const rows = ([['五時間', fiveHour], ['七日', sevenDay]] as [string, Limit | undefined][]).filter(([, w]) => w !== undefined) as [string, Limit][]
   if (rows.length === 0) return ''
@@ -217,7 +170,6 @@ function limits({ fiveHour, sevenDay }: Meter): string {
     if (i > 0) text += `<path class="ci" d="M314 ${y}H350"/>`
     y += 2.5
     text += `<text class="tl" font-size="15" text-anchor="middle" font-family="${MINCHO}">${[...name].map(c => `<tspan x="332" y="${(y += 15.5)}">${c}</tspan>`).join('')}</text>`
-    // the figure ends where the digits and ％ together sit centred: a Mincho digit is about 0.54 em, ％ here 8 wide
     const n = String(w.used)
     const size = n.length > 2 ? 13 : 20
     const end = Math.round(332 + (n.length * 0.54 * size - 8) / 2)
@@ -229,11 +181,8 @@ function limits({ fiveHour, sevenDay }: Meter): string {
   return `<rect class="ct" x="310" y="62" width="44" height="${y + 4 - 62}"/><rect class="ci" x="314" y="66" width="36" height="${y - 66}"/>${text}${reset}`
 }
 
-// crests: [x, y, scale]; at rest one big wave breaks below the rock and a small one beside it; at work the wind breaks
-// more on both sides, always beside the chat, never behind it
 const CRESTS: [number, number, number][] = [[1440, 1000, 1.5], [1336, 968, 0.7]]
 const WIND: [number, number, number][] = [[290, 958, 0.62], [352, 984, 0.8], [392, 940, 0.42], [1556, 960, 0.55]]
-// boats: [x, y, scale]: the fisherman's skiff below the gate, the sailing boat off the headland
 const SKIFF: [number, number, number] = [318, 880, 0.62]
 const SAILER: [number, number, number] = [1330, 690, 0.55]
 
@@ -245,7 +194,6 @@ export function ukiyoeScene(activity: 'idle' | 'busy' = 'idle', meter: Meter = {
   const crestS = crests
     .map(([x, y, s], i) => `<g class="crest" transform="translate(${x} ${y}) scale(${s})"><g class="cr" style="animation-delay:-${((i * 0.37) % 1.4).toFixed(2)}s"><use href="#cw"/></g></g>`)
     .join('')
-  // spray off each lip while the wind blows, from its own generator
   const rs = rng(91)
   const spray = busy
     ? crests
@@ -261,7 +209,6 @@ export function ukiyoeScene(activity: 'idle' | 'busy' = 'idle', meter: Meter = {
   const title = (cls: string, s: string) =>
     `<text class="${cls} tt" font-size="19" text-anchor="middle" font-family="Hiragino Mincho ProN, Yu Mincho, serif">${[...s].map((c, i) => `<tspan x="289" y="${88 + i * 25}">${c}</tspan>`).join('')}</text>`
 
-  // moss on the rock's crown
   let moss = ''
   const crown: Pt[] = [[1606, 682], [1576, 692], [1548, 688], [1520, 704], [1490, 708], [1462, 726], [1436, 732], [1412, 756]]
   for (let i = 0; i < crown.length - 1; i++)
@@ -269,10 +216,8 @@ export function ukiyoeScene(activity: 'idle' | 'busy' = 'idle', meter: Meter = {
       const t = (k + rnd()) / 3
       moss += `M${r0(crown[i][0] + (crown[i + 1][0] - crown[i][0]) * t)} ${r0(crown[i][1] + (crown[i + 1][1] - crown[i][1]) * t + 5 + rnd() * 6)}h0`
     }
-  // hatching for the shaded faces of the rock
   let hatch = ''
   for (let c = 2050; c < 2560; c += 9) hatch += `M1370 ${c - 1370}L1660 ${c - 1660}`
-  // paper fibres, the baren's uneven pressure, and the wood grain of the block in the sky: seamless tiles
   let fibres = ''
   for (let i = 0; i < 220; i++) {
     const a = rnd() * Math.PI

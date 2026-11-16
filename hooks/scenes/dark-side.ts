@@ -1,8 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Dark side: deep black-red space, a varied drifting starfield, violet-red nebulae. A tall hooded figure stands
-// at the left edge in silhouette, seen from behind, holding one straight red energy blade pointed down.
-// idle: steady dim blade, small bloom. busy: bright blade, wide bloom and floor pool, slow pulse, rising embers.
-// Portrait screens slide the figure into view. Original art, pure string building, deterministic.
 
 function lcg(seed: number): () => number {
   let s = seed >>> 0
@@ -17,7 +13,6 @@ export function darkSideScene(state: 'idle' | 'busy'): string {
   const busy = state === 'busy'
   const r = lcg(7311)
 
-  // stars: varied size and brightness, none in the centre panel zone
   let stars = ''
   let n = 0
   while (n < 120) {
@@ -48,7 +43,6 @@ export function darkSideScene(state: 'idle' | 'busy'): string {
 
   const cls = busy ? 'pu' : ''
   const rim = busy ? 0.95 : 0.55
-  // soft cloak: smooth curves, scalloped hem, hood with a shadowed opening shoulder
   const cloak =
     'M215,288 C242,288 268,318 274,372 C278,402 294,420 314,444 C338,484 358,540 372,588 L360,600 C346,590 332,572 320,556 C318,640 330,740 352,826 C340,836 326,826 312,832 C298,840 284,826 268,832 C252,840 238,826 222,833 C206,840 190,826 174,832 C158,838 144,826 128,832 C112,838 100,828 92,824 C100,700 112,600 128,500 C138,450 166,420 174,388 C178,376 170,368 170,358 C176,320 190,288 215,288 Z'
 

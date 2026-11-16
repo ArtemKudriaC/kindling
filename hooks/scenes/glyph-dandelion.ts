@@ -1,6 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Glyph dandelion (Одуванчики): a meadow seen from low down, dandelions at both edges built from shaded character tiles.
-// Light: spring morning, yellow blooms and one white seed clock. Dark: dusk, every head a seed clock glowing from within.
 import type { Grid, Pt } from './glyph-kit'
 import { burst, D, frame, grid, ground, hit, L, lcg, mat, move, on, raster, line, ell, tiles } from './glyph-kit'
 
@@ -22,7 +20,6 @@ function materials(): void {
   mat('sd', { lo: '#ecd9a2', hi: '#fffbe8', ink: '#8a6a30' }, { lo: '#6a5a98', hi: '#fff4cc', ink: '#5a3a1a' })
 }
 
-// ---- sprites ----
 function bloom(S: number, R: number, ph: number): Grid {
   const G = grid(S, S), c = S / 2, n1 = Math.max(8, Math.round(R * 2.2))
   for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
@@ -35,23 +32,22 @@ function bloom(S: number, R: number, ph: number): Grid {
     if (u > 0.4 && pv < 0.2) s -= 0.1
     G.s[y * S + x] = clamp(s + 0.07 * (hash(x * 5, y * 7) - 0.5))
   }
-  for (let i = 0; i < 10; i++) { // ray tiles one cell past the disc
+  for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2 + ph, x = Math.floor(c + Math.cos(a) * (R + 0.9)), y = Math.floor(c + Math.sin(a) * (R + 0.9))
     if (i % 4 !== 3 && G.s[y * S + x] < 0) G.s[y * S + x] = 0.84
   }
   return G
 }
 
-// seed clock: radial filaments of a sphere, tip puffs, hub. glow = lit from within (dark variant).
 function clock(S: number, R: number, o: { thin?: number; glow?: boolean; seed?: number }): Grid {
   const G = grid(S, S), c = S / 2, rnd = lcg(o.seed ?? 1), glow = !!o.glow
   const Rt = R - 1.3, pts: [number, number, number, number][] = []
   const M = Math.round(R * 1.9), N = Math.round(R * R * 0.24)
-  for (let i = 0; i < M; i++) { // silhouette ring: spokes to the rim
+  for (let i = 0; i < M; i++) {
     const a = (i + (rnd() - 0.5) * 0.5) / M * Math.PI * 2, z = (rnd() - 0.5) * 0.7, rr = Math.sqrt(1 - z * z)
     pts.push([Math.cos(a) * rr, Math.sin(a) * rr, z, rnd()])
   }
-  for (let i = 0; i < N; i++) { // inner front spokes
+  for (let i = 0; i < N; i++) {
     const z = 0.35 + 0.65 * (i + 0.5) / N, rr = Math.sqrt(1 - z * z), th = i * 2.399963
     pts.push([Math.cos(th) * rr, Math.sin(th) * rr, z, rnd()])
   }
@@ -93,9 +89,7 @@ function clock(S: number, R: number, o: { thin?: number; glow?: boolean; seed?: 
 }
 
 const NECK = 8
-// stem column offset (cells right of the base) at row y: busy = one step per 3 rows over the top 3*lean rows, idle = a small bow
 const stemCol = (y: number, H0: number, lean: number, bow: number) => lean ? Math.max(0, Math.floor((3 * lean - Math.min(y, H0)) / 3)) : Math.round(bow * Math.sin(Math.PI * Math.max(0, 1 - y / H0)))
-// static lower stem, written cell by cell so the bend is clean
 function stemG(W: number, H: number, H0: number, k: number, lean: number, bow: number): Grid {
   const G = grid(W, H)
   for (let y = NECK - 1; y < H; y++) {
@@ -105,7 +99,6 @@ function stemG(W: number, H: number, H0: number, k: number, lean: number, bow: n
   }
   return G
 }
-// calyx and the neck of the stem: they move rigidly with the head
 function calyxG(S: number, R: number, small: boolean, H0: number, lean: number, bow: number): Grid {
   const hx = S / 2, hy = S / 2, sp = small ? 0.45 : 0.6
   const sh = [ell(hx, hy + R + 0.6, 2.2 + R * 0.14, 1.8 + R * 0.08, { g: 1, b: 0.62, rim: 0.4 })]
@@ -118,7 +111,6 @@ function calyxG(S: number, R: number, small: boolean, H0: number, lean: number, 
   return G
 }
 
-// blade or leaf written straight into a grid
 function blade(G: Grid, x0: number, y0: number, len: number, ang: number, bend: number, w0: number, g: number, b: number, o: { wind?: number; leaf?: boolean; vein?: number } = {}) {
   const n = Math.ceil(len * 3)
   let x = x0, y = y0
@@ -140,7 +132,6 @@ function blade(G: Grid, x0: number, y0: number, len: number, ang: number, bend: 
   }
 }
 
-// a patch of grass; blades shorten toward the open end (taper = 'r': right end open, 'l': left end open)
 function patch(W: number, H: number, seed: number, o: { n: number; hmin: number; hmax: number; wind: number; w0: number; b: number; taper: 'l' | 'r'; leaves?: number; leafW?: number }): Grid {
   const G = grid(W, H), r = lcg(seed)
   const edge = (x: number) => Math.min(clamp(((o.taper === 'r' ? W - x : x) - 1) / 10, 0.18, 1), clamp(((o.taper === 'r' ? x : W - x) + 1) / 8 + 0.2 * (hash(x * 7, 3) - 0.5), 0.2, 1))
@@ -162,8 +153,6 @@ function patch(W: number, H: number, seed: number, o: { n: number; hmin: number;
   return G
 }
 
-// seeds: tuft on top, 2 to 3 tile stalk below, trailing back in the wind
-// floating seed: one bright tile and a two-tile faint tail. In a stream: two tiles wide at the head, trail fading and spreading
 function seedT(wide: boolean, long = false): Grid {
   if (long) { const G = grid(9, 4), set = (x: number, y: number, s: number) => { G.s[y * 9 + x] = s; G.g[y * 9 + x] = 0 }; set(7, 0, 0.98); set(6, 0, 0.9); set(5, 1, 0.34); set(4, 1, 0.28); set(3, 2, 0.2); set(2, 2, 0.15); set(1, 3, 0.1); return G }
   const G = grid(6, 4), set = (x: number, y: number, s: number) => { G.s[y * 6 + x] = s; G.g[y * 6 + x] = 0 }
@@ -184,7 +173,6 @@ const PLANTS: Pl[] = [
   { id: 'E', c: 12, col: 119, row: 52, R: 5, bloom: true, bow: 2, ph: 1.6, thin: 0.8, dl: -9, extra: 22, hh: 80 },
 ]
 
-// clustered dust: a few loose glyphs near the objects only
 function loose(cls: string, op: number, seed: number, n: number, ch = '01{}();=<>/#:+*'): string {
   const r = lcg(seed), zones: [number, number, number, number][] = [[40, 420, 120, 820], [1180, 1560, 120, 820]]
   const xs: number[] = [], ys: number[] = []; let s = ''
@@ -192,7 +180,6 @@ function loose(cls: string, op: number, seed: number, n: number, ch = '01{}();=<
   return `<text class="${cls}" opacity="${op}" font-size="13" x="${xs.join(' ')}" y="${ys.join(' ')}">${s}</text>`
 }
 
-// click puff: 8 cream tiles with @ or * drift up and sideways, 4 of them with a one-tile tail; soft 3-step flash
 function puff(id: string, x: number, y: number, seed: number): string {
   const r = lcg(seed); let p = ''
   for (let i = 0; i < 8; i++) {
@@ -212,7 +199,6 @@ export function glyphDandelionScene(state: 'idle' | 'busy'): string {
   const WIND = busy ? 24 : 1
   const css: string[] = []
 
-  // ---- grass layers (calm: two tone steps, no bright glyphs) ----
   const RAMP = ' .:-='
   const grass = (side: 'l' | 'r', c: number, W: number, H: number, seed: number, mats: string[], o: Parameters<typeof patch>[3], dur: number) => {
     const x0 = side === 'l' ? 24 : 1576 - W * c, y0 = 1000 - H * c, nm = `gs${side}${c}`
@@ -222,7 +208,6 @@ export function glyphDandelionScene(state: 'idle' | 'busy'): string {
   const midG = (s: 'l' | 'r') => grass(s, 12, 22, 12, s === 'l' ? 41 : 47, ['gr', 'gv'], { n: 3, hmin: 6, hmax: 12, wind: 0, w0: 1.0, b: 0.85, taper: 'r' }, busy ? 2.4 : 10)
   const nearG = (s: 'l' | 'r') => grass(s, 16, 16, 10, s === 'l' ? 51 : 57, ['gn', 'gv'], { n: 2, hmin: 6, hmax: 9, wind: 0, w0: 1.2, b: 0.85, taper: 'r', leaves: 2, leafW: 1.7 }, busy ? 2.0 : 8)
 
-  // ---- plants ----
   const geo = PLANTS.map(p => { const H0 = Math.ceil(1000 / p.c) - p.row + 1; return { p, H0, lean: Math.round(H0 / 6) } })
   const parts = geo.map(({ p, H0, lean }, pi) => {
     const { c, R } = p, S = 2 * Math.ceil(R) + 3, m = (S - 1) / 2
@@ -235,7 +220,6 @@ export function glyphDandelionScene(state: 'idle' | 'busy'): string {
     const cls = `sw${p.id}`
     css.push(busy ? `.${cls}{transform:translate(${lean * c}px,0)}` : `@keyframes ${cls}{${offs.map((o, i) => `${i * 50}%{transform:translate(${o * c}px,0)}`).join('')}}.${cls}{animation:${cls} ${dur}s step-end ${p.dl}s infinite}`)
     const id = 'h' + p.id
-    // regrow: one head, revealed by a clip circle that steps out in whole cells after the puff
     const steps = [0, R * 0.4 * c, R * 0.7 * c, R * 0.92 * c].map(v => Math.round(v)), rr = (R + 2) * c
     const clipId = 'cp' + p.id
     const headFor = (build: (r: number) => Grid, mats: string[], sh: number, extra = '', pre = '') =>
@@ -262,15 +246,13 @@ export function glyphDandelionScene(state: 'idle' | 'busy'): string {
   const plant = (id: string) => parts.find(q => q.id === id)!.mid
   const pp = (id: string) => parts.find(q => q.id === id)!
 
-  // ---- seeds: attached to their plant so they travel with it on the phone ----
   const sd = (S: Grid, c: number, x: number, y: number) => tiles(S, { c, x, y, mats: ['sd'] })
   const seedAt = (id: string, c: number, x: number, y: number, dx: number, dy: number, dur: number, dl: number, wide: boolean, long = false) =>
     `<g class="pl-${id}">${diag(sd(seedT(wide, long), c, x, y), { dx, dy, c, dur, delay: dl, fade: true })}</g>`
   let seeds = ''
   if (busy) {
-    // seeds leave the head edge and run up and right; never through a head or across a stem
     const edge = (id: string, deg: number, gap = 30) => { const q = pp(id), a = deg * Math.PI / 180, rc = q.R * q.c + gap; return [q.hcx + Math.cos(a) * rc - 36, q.cy - Math.sin(a) * rc - 6] }
-    const spec: [string, number, number, number, number, number, number, number][] = [ // id, edge deg, dx, dy, dur, delay, c
+    const spec: [string, number, number, number, number, number, number, number][] = [
       ['A', 62, 72, -48, 6, -0.5, 12, 0], ['A', 88, 96, -60, 7, -3.4, 12, 0], ['A', 105, 96, -48, 6.5, -5.2, 12, 0],
       ['B', 85, 48, -48, 5.5, -2.1, 12, 0], ['C', 85, 48, -40, 6, -3.9, 8, 0],
       ['D', 62, 72, -48, 6, -1.6, 12, 0], ['D', 100, 96, -60, 7, -4.8, 12, 0],

@@ -1,7 +1,4 @@
 // @ts-nocheck ponytail: generated SVG string builders, checked by render tests not tsc
-// Конец месяца: a lit glass card with the current month (Monday first) in the right column, and one hero figure:
-// days until the next tax deadline of a Polish sole trader. ZUS and PIT advance on the 20th, JPK_V7 / VAT on the 25th;
-// a Saturday or Sunday date moves to Monday. Blue = next deadline, amber = coming, green = done.
 
 const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 const WD = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -71,7 +68,6 @@ export function monthEndScene(date: { year: number; month: number; day: number }
   let wd = ''
   for (let c = 0; c < 7; c++) wd += `<text x="${GX + c * CW + CW / 2}" y="${Y0 + 88}" text-anchor="middle" font-size="13" font-weight="500" fill="#4a5d82">${WD[c]}</text>`
 
-  // hero figure
   let hero: string
   if (next === undefined) {
     hero = `<text x="0" y="70" font-size="56" font-weight="300" letter-spacing="-2" fill="#3f7a45">Всё сдано</text>`
