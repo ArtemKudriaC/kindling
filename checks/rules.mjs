@@ -250,7 +250,46 @@ export function files(root) {
   return out.sort()
 }
 
-export const scanTree = root => files(root).flatMap(f => scan(f, readFileSync(join(root, f), 'utf8')))
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+  'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+const inWords = n => (n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? `-${ONES[n % 10]}` : ''))
+const NUMBERS = new Map(Array.from({ length: 100 }, (_, n) => [inWords(n), n]))
+const PROSE_COUNTS = ['README.md', '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json']
+const SAID_COUNT = /\b(\d+|[a-z]+(?:-[a-z]+)?)\s+(?:living\s+)?(?:themes|backdrops|looks)\b/gi
+const TESTS = /^(tests\/|checks\/.*\.test\.mjs$)/
+
+export const lookIds = reg =>
+  [...reg.slice(reg.indexOf('const LOOKS = {'), reg.indexOf('} satisfies Record')).matchAll(/^ {2}'?([\w-]+)'?: \{$/gm)].map(m => m[1])
+
+export function lookCount(read, paths) {
+  const n = lookIds(read('hooks/register.tsx')).length
+  const out = []
+  const add = (file, line, message) => out.push({ file, line, rule: 'look-count', message: `${file}:${line}: look-count: ${message}` })
+  if (n === 0) add('hooks/register.tsx', 1, 'lookIds found no looks: it reads the table between `const LOOKS = {` and `} satisfies Record`; keep those markers or update lookIds')
+  for (const f of PROSE_COUNTS.filter(f => paths.includes(f))) {
+    const text = read(f)
+    for (const m of text.matchAll(SAID_COUNT)) {
+      const said = /^\d+$/.test(m[1]) ? Number(m[1]) : NUMBERS.get(m[1].toLowerCase())
+      if (said !== undefined && said !== n) add(f, at(text, m.index), `says "${m[0]}" but LOOKS in hooks/register.tsx holds ${n}: write ${inWords(n)}`)
+    }
+  }
+  const pinned = new RegExp(`(\\.(length|size)\\b\\s*\\)?\\s*(,|\\.to(Be|Equal|StrictEqual)\\s*\\(|===?)|\\.toHaveLength\\s*\\()\\s*${n}\\b`
+    + `|\\b${n}\\s*(,|===?)\\s*[\\w$.()]*\\.(length|size)\\b`, 'g')
+  for (const f of paths.filter(f => TESTS.test(f))) {
+    const { code } = lex(read(f))
+    for (const m of code.matchAll(pinned)) {
+      add(f, at(code, m.index), 'the look count is written by hand here. Derive it from LOOKS (lookIds in checks/rules.mjs, the /look list in the plugin test) so adding a look never edits a gated assertion')
+    }
+  }
+  return out
+}
+
+export const scanTree = root => {
+  const paths = files(root)
+  const read = f => readFileSync(join(root, f), 'utf8')
+  return [...paths.flatMap(f => scan(f, read(f))), ...lookCount(read, paths)]
+}
 
 export const SHIPPED = /^(hooks\/|types\/|\.claude-plugin\/(?!plugin\.json$))/
 
