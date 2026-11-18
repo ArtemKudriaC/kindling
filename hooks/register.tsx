@@ -6,6 +6,7 @@ import { makeColors } from './make-colors.js'
 import { PALETTES } from './palettes'
 import { darkSideScene } from './scenes/dark-side'
 import { clayScene } from './scenes/clay'
+import { cyberpunkScene } from './scenes/cyberpunk'
 import { gardenScene } from './scenes/garden'
 import { glyphBalloonsScene } from './scenes/glyph-balloons'
 import { glyphDandelionScene } from './scenes/glyph-dandelion'
@@ -208,6 +209,14 @@ const LOOKS = {
     live: true,
     meter: true,
     scene: (a, _s, _now, m) => ukiyoeScene(a === 'idle' ? 'idle' : 'busy', m),
+  },
+  cyberpunk: {
+    title: 'Киберпанк',
+    blurb: 'неоновый мегаполис ночью под дождём: башни с вывесками, летящие машины, мокрый асфальт и спорткар у тротуара; справа на крыше билборд с батарейкой Claude: ' +
+      'сколько осталось от самого тесного лимита, пятичасового или недельного, его настроение от fully charged до offline и когда он перезарядится; надписи по-английски',
+    glass: { blur: 26, tint: '#06090e', opacity: 0.6 },
+    meter: true,
+    scene: (_a, _s, now, m) => cyberpunkScene(m, now),
   },
 } satisfies Record<string, Look>
 

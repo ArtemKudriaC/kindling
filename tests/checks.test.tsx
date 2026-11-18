@@ -59,7 +59,7 @@ test('every look, at rest and at work: an svg under 120000 characters, no script
   engine(on)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   const all = await ids($)
-  expect(all.length).toBe(24)
+  expect(all.length).toBe(25)
   expect([...STILL].filter(id => !all.includes(id))).toEqual([])
   for (const busy of [false, true]) {
     if (busy) await $.turn.start({ turnId: 't1' })
