@@ -175,7 +175,7 @@ test('every look has its preview and README row', () => {
   const ids = [...table.matchAll(/^ {2}'?([\w-]+)'?: \{$/gm)].map(m => m[1])
   const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
   const shots = readdirSync(new URL('../previews', import.meta.url))
-  assert.equal(ids.length, 24)
+  assert.equal(ids.length, 25)
   const missing = ids.flatMap(id => [
     ...(shots.some(f => f === `${id}.jpg` || f === `${id}-light.jpg`) ? [] : [`${id}: no previews/${id}.jpg; render the look and save it there`]),
     ...(readme.includes(`\`${id}\``) ? [] : [`${id}: no README row; add one naming \`${id}\``]),

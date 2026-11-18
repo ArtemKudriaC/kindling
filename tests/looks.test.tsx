@@ -94,7 +94,7 @@ test('every look draws an svg on desktop and nothing in the terminal', async ($,
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
-  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn', 'ember-core', 'ivory', 'sakura', 'ukiyo-e']) {
+  for (const id of ['koster', 'dark-side', 'terracotta', 'recovery', 'home', 'manuscript', 'training', 'garden', 'month-end', 'hacker', 'clay', 'raster', 'raster-ide', 'raster-code', 'glyph-lighthouse', 'glyph-balloons', 'glyph-dandelion', 'glyph-train', 'stipple-lake', 'gouache-autumn', 'ember-core', 'ivory', 'sakura', 'ukiyo-e', 'cyberpunk']) {
     const ui = await $.ui.mount(backdrop(id))
     const svg = (await ui.find({ type: 'Svg' }))?.props.source
     expect(String(svg).startsWith('<svg')).toBe(true)
@@ -707,3 +707,79 @@ test('/look ember-core wears Тлеющее ядро in the dark and /look ivory
   }
 })
 
+test('/look cyberpunk wears Киберпанк: a neon city in English with a car and a billboard right of the chat; its battery is what is left of the tightest limit, with a mood and the reset time, and no reading says so; the app plays it, no script', async ($, on) => {
+  const sets: Set[] = []
+  engine(on, sets)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  expect((await $.command.run({ command: 'look', args: 'cyberpunk' })).text).toMatch(/^Киберпанк: /)
+  expect(sets.at(-1)?.backdrop?.scene).toBe('cyberpunk')
+  expect((await $.command.run({ command: 'look', args: 'list' })).text).toMatch(/^cyberpunk: Киберпанк, /m)
+
+  const draw = async () => {
+    const ui = await $.ui.mount(backdrop('cyberpunk'))
+    const svg = String((await ui.find({ type: 'Svg' }))?.props.source)
+    await ui.unmount()
+    return svg
+  }
+  const text = (svg: string, cls: string) => svg.match(new RegExp(`<text class="${cls}"[^>]*>([^<]*)</text>`))?.[1]
+  const cells = (svg: string) => [...svg.matchAll(/<path class="cell"[^>]*fill="([^"]+)"/g)].map(m => m[1])
+  const lit = (svg: string) => cells(svg).filter(f => f === svg.match(/<text class="pct"[^>]*fill="([^"]+)"/)?.[1]).length
+  const board = (svg: string) => ({ pct: text(svg, 'pct'), mood: text(svg, 'mood'), when: text(svg, 'when'), lit: lit(svg) })
+  const clock = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  const when = (iso: string) => {
+    const at = new Date(iso)
+    const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][at.getDay()]
+    return at.toDateString() === new Date().toDateString() ? `at ${clock(at)}` : `${day} ${at.getDate()} ${clock(at)}`
+  }
+  const measure = (five: number, fiveAt: string | undefined, seven: number, sevenAt?: string) =>
+    $.session.measure({
+      context: { window: 200000 },
+      rateLimits: [
+        { kind: 'five_hour', percentUsed: five, ...(fiveAt === undefined ? {} : { resetsAt: fiveAt }) },
+        { kind: 'seven_day', percentUsed: seven, ...(sevenAt === undefined ? {} : { resetsAt: sevenAt }) },
+      ],
+      changed: ['rateLimits'],
+    })
+  const later = (ms: number) => new Date(Date.now() + ms).toISOString()
+
+  const none = await draw()
+  expect({ ...board(none), lit: undefined }).toEqual({ pct: '--%', mood: 'no signal', when: 'awaiting first reply', lit: undefined })
+
+  const weekAt = later(5 * 864e5)
+  await measure(23.4, later(2 * 36e5), 41, weekAt)
+  const steady = await draw()
+  expect(board(steady)).toEqual({ pct: '59%', mood: 'steady', when: `recharge ${when(weekAt)}`, lit: 3 })
+  expect(cells(none)).toEqual(Array(5).fill(cells(steady)[4]))
+
+  const fiveAt = later(30 * 6e4)
+  await measure(92, fiveAt, 41, weekAt)
+  const fumes = await draw()
+  expect(board(fumes)).toEqual({ pct: '8%', mood: 'running on fumes', when: `recharge ${when(fiveAt)}`, lit: 1 })
+  expect(fumes.includes('<g filter="url(#neon)" class="low">')).toBe(true)
+  expect(steady.includes('class="low"')).toBe(false)
+
+  await measure(100, fiveAt, 41, weekAt)
+  expect(board(await draw())).toEqual({ pct: '0%', mood: 'offline', when: `back online ${when(fiveAt)}`, lit: 0 })
+
+  await measure(64, later(-6e4), 12)
+  expect(board(await draw())).toEqual({ pct: '88%', mood: 'fully charged', when: undefined, lit: 5 })
+
+  await measure(0, undefined, 0)
+  const full = await draw()
+  expect(board(full)).toEqual({ pct: '100%', mood: 'fully charged', when: undefined, lit: 5 })
+
+  for (const svg of [none, steady, fumes, full]) {
+    const frame = svg.match(/<g class="bat">[\s\S]*?<polygon points="([^"]+)"/)?.[1] ?? ''
+    const xs = frame.split(' ').map(p => Number(p.split(',')[0]))
+    expect(xs.length === 6 && Math.min(...xs) >= 1282 && Math.max(...xs) <= 1600).toBe(true)
+    const car = svg.match(/<g class="hero"><g transform="translate\(([\d.]+) [\d.]+\) scale\(([\d.]+)\)">/)
+    expect(Number(car?.[1]) >= 1282 && Number(car?.[1]) + 303 * Number(car?.[2]) <= 1600).toBe(true)
+    expect(svg.includes('<use href="#carBody"/>')).toBe(true)
+    const words = [...svg.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)].map(m => m[1].replaceAll(/<[^>]*>/g, ''))
+    expect(words.length > 10 && words.every(w => /^[A-Za-z0-9 %:\-]*$/.test(w))).toBe(true)
+    expect(svg.includes('max-aspect-ratio')).toBe(false)
+    expect(playsInApp(svg)).toBe(true)
+    expect(svg.length < 120000).toBe(true)
+    expect(/<script|javascript:|\son\w+=/i.test(svg)).toBe(false)
+  }
+})

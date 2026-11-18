@@ -751,5 +751,47 @@ export const PALETTES: Record<string, Omit<Parameters<typeof makeColors>[0], 'la
         }
       }
     }
+  },
+  "cyberpunk": {
+    "only": "dark",
+    "contrast": "more",
+    "roles": {
+      "accent": {
+        "seed": "#f5e93a",
+        "stops": {
+          "100": "#fbf39a",
+          "250": "#f5e93a",
+          "300": "#e9db1e",
+          "400": "#cfc010"
+        },
+        "fillShade": 250
+      },
+      "danger": "#ff3b4f",
+      "success": "#3dffb0",
+      "warning": "#ff9f1c",
+      "pro": "#00e5ff"
+    },
+    "dark": {
+      "gray": {
+        "anchors": {
+          "surface-0": "#06090e",
+          "surface-1": "#0b1017",
+          "surface-2": "#10161f",
+          "surface-3": "#151c27",
+          "text-primary": "#e8f6f7",
+          "text-secondary": "#c4d4d8",
+          "text-muted": "#a3b6bc"
+        }
+      },
+      "git": {
+        "added": "#3dffb0",
+        "removed": "#ff3b4f",
+        "modified": "#00e5ff",
+        "merged": "#c98cff",
+        "closed": "#ff6b7a",
+        "conflicting": "#ff9f1c",
+        "draft": "#a3b6bc"
+      }
+    }
   }
 }

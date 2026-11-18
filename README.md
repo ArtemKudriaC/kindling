@@ -1,6 +1,6 @@
 # kindling
 
-Living backdrops for the Claude Code desktop app. One mod, `kindling`, with twenty-four themes that move while Claude works and rest while it waits. They draw only in the Code tab of the desktop app: in a terminal or VS Code, `/look` saves the choice and draws nothing.
+Living backdrops for the Claude Code desktop app. One mod, `kindling`, with twenty-five themes that move while Claude works and rest while it waits. They draw only in the Code tab of the desktop app: in a terminal or VS Code, `/look` saves the choice and draws nothing.
 
 ![Маяк at night](previews/glyph-lighthouse-dark.jpg)
 
@@ -110,6 +110,17 @@ The print also carries Claude's own figures, the way an Edo print carries text. 
 |---|---|
 | ![](previews/ukiyo-e-light.jpg) | ![](previews/ukiyo-e-dark.jpg) |
 | **Укиё-э** `ukiyo-e`: a slow swell, the boats rock, the sail is stowed | while Claude works, the wind rises: mist drifts across the gate, the fisherman casts his net, the sail is set, more crests break and throw spray |
+
+## Cyberpunk: a neon megacity in the rain
+
+A megacity at night, drawn from scratch: towers at both edges with lit windows and English neon signs (CAPSULES, RAMEN, OPEN 24H, HOTEL, BAR, IMPLANTS), a hologram with an eye, searchlights and flying traffic, a megatower in the smog behind the chat, rain over wet asphalt that reflects every sign, and a sports car with a pink underglow parked at the lower right. It is dark only.
+
+A small billboard on the right-hand roof is Claude's battery. Its charge is what is left of the tightest usage limit, five-hour or seven-day: the percent, the cells and the colour go from cyan through yellow to red as the limit runs out, a mood reads from fully charged through steady, tired and drained to running on fumes (the board blinks) and offline, and the last line says when Claude recharges. Until Claude Code has a reading, and on an API key, which has no such limits, the board says no signal.
+
+| |
+|---|
+| ![](previews/cyberpunk.jpg) |
+| **Киберпанк** `cyberpunk`: rain, flickering neon, flying traffic and a glitching name on the billboard; the battery follows the limit |
 
 ## Raster: print dither
 
