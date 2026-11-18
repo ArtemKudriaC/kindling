@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { needsBump, scan, scanTree } from './rules.mjs'
+import { lookCount, lookIds, needsBump, scan, scanTree } from './rules.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const rules = (file, src) => scan(file, src).map(x => x.rule)
@@ -171,16 +171,47 @@ test('this branch bumps the version if it changes shipped files', () => {
 
 test('every look has its preview and README row', () => {
   const reg = readFileSync(new URL('../hooks/register.tsx', import.meta.url), 'utf8')
-  const table = reg.slice(reg.indexOf('const LOOKS = {'), reg.indexOf('} satisfies Record'))
-  const ids = [...table.matchAll(/^ {2}'?([\w-]+)'?: \{$/gm)].map(m => m[1])
+  const ids = lookIds(reg)
   const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
   const shots = readdirSync(new URL('../previews', import.meta.url))
-  assert.equal(ids.length, 25)
+  const pal = readFileSync(new URL('../hooks/palettes.ts', import.meta.url), 'utf8')
+  assert.deepEqual([...ids].sort(), Object.keys(JSON.parse(pal.slice(pal.indexOf('= {') + 2))).sort())
   const missing = ids.flatMap(id => [
     ...(shots.some(f => f === `${id}.jpg` || f === `${id}-light.jpg`) ? [] : [`${id}: no previews/${id}.jpg; render the look and save it there`]),
     ...(readme.includes(`\`${id}\``) ? [] : [`${id}: no README row; add one naming \`${id}\``]),
   ])
   assert.deepEqual(missing, [])
+})
+
+test('look-count: no test writes the number of looks, and the README and manifests say as many as LOOKS holds', () => {
+  const tree = {
+    'hooks/register.tsx': "const LOOKS = {\n  koster: {\n    title: 'a',\n  },\n  'dark-side': {\n    title: 'b',\n  },\n} satisfies Record<string, Look>\n",
+    'README.md': 'One mod with two themes.\n',
+    '.claude-plugin/plugin.json': '{"description": "Two living backdrops"}\n',
+    '.claude-plugin/marketplace.json': '{"description": "two themes switched with /look"}\n',
+    'tests/checks.test.tsx': 'expect([...all].sort()).toEqual(Object.keys(PALETTES).sort())\n',
+    'checks/rules.test.mjs': 'assert.ok(lookIds(reg).length > 0)\n',
+  }
+  const count = (over = {}) => {
+    const t = { ...tree, ...over }
+    return lookCount(f => t[f], Object.keys(t)).map(x => x.message)
+  }
+  assert.deepEqual(count(), [])
+  assert.deepEqual(lookIds(tree['hooks/register.tsx']), ['koster', 'dark-side'])
+  assert.match(count({ 'tests/checks.test.tsx': 'expect(all.length).toBe(2)\n' })[0], /^tests\/checks\.test\.tsx:1: look-count: .*Derive it from LOOKS/)
+  assert.match(count({ 'checks/rules.test.mjs': 'const ids = []\nassert.equal(ids.length, 2)\n' })[0], /^checks\/rules\.test\.mjs:2: look-count: .*so adding a look never edits a gated assertion/)
+  assert.match(count({ 'tests/looks.test.tsx': 'expect(ids).toHaveLength(2)\n' })[0], /^tests\/looks\.test\.tsx:1: look-count/)
+  assert.match(count({ 'README.md': 'Intro.\nOne mod with three themes.\n' })[0], /^README\.md:2: look-count: says "three themes" but LOOKS in hooks\/register\.tsx holds 2: write two/)
+  assert.match(count({ '.claude-plugin/plugin.json': '{"description": "Twenty-five living backdrops"}\n' })[0], /^\.claude-plugin\/plugin\.json:1: look-count: says "Twenty-five living backdrops"/)
+  assert.match(count({ '.claude-plugin/marketplace.json': '{"description": "3 looks"}\n' })[0], /^\.claude-plugin\/marketplace\.json:1: look-count: says "3 looks"/)
+  assert.match(count({ 'tests/a.test.tsx': 'expect(all.length).toEqual(2)\n' })[0], /look-count/)
+  assert.match(count({ 'checks/a.test.mjs': 'assert.equal(2, ids.length)\n' })[0], /look-count/)
+  assert.match(count({ 'tests/a.test.tsx': 'expect(new Set(ids).size).toBe(2)\n' })[0], /look-count/)
+  assert.match(count({ 'tests/a.test.tsx': 'expect(ids.length).toStrictEqual(2)\n' })[0], /look-count/)
+  assert.match(count({ 'hooks/register.tsx': 'const TABLE = {}\n' })[0], /^hooks\/register\.tsx:1: look-count: lookIds found no looks/)
+  assert.deepEqual(count({ 'tests/checks.test.tsx': 'expect(svg.length).toBe(120000)\nconst s = "assert.equal(ids.length, 2)"\n' }), [])
+  assert.deepEqual(count({ 'README.md': 'All themes draw in the Code tab, and the looks move.\n' }), [])
+  assert.deepEqual(count({ 'hooks/scenes/a.ts': 'const two = xs.length === 2\n' }), [])
 })
 
 test('a /look command catches up with other chats before it writes, and every chat follows on a timer, as checks/follow/Follow.tla assumes', () => {
